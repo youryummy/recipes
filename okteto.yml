@@ -1,6 +1,6 @@
 build:
   recipes:
-    context: ../
+    context: .
 
 deploy:
   - helm upgrade --install recipes chart
@@ -10,4 +10,4 @@ dev:
   recipes:
     command: npm start
     sync:
-      - ..:/source/app
+      - .:/app

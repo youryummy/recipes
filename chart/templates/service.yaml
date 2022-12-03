@@ -6,7 +6,7 @@ metadata:
     {{- include "recipes.labels" . | nindent 4 }}
   annotations:
     dev.okteto.com/auto-ingress: "true"
-spect:
+spec:
   selector:
     app.kubernetes.io/name: recipes
     app.kubernetes.io/instance: {{ .Release.Name }}
