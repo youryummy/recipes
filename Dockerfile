@@ -11,7 +11,7 @@ COPY bin/ ./bin
 COPY source/Misc/public/ ./public
 COPY source/routes/ ./routes
 COPY source/Misc/views/ ./views
-COPY source/app.js .
+COPY app.js .
 
 EXPOSE 3000
 
