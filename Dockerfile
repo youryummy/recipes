@@ -7,6 +7,7 @@ COPY package-lock.json .
 
 RUN npm install
 
+WORKDIR /app
 COPY bin/ ./bin
 COPY source source
 COPY views views
