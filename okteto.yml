@@ -10,4 +10,4 @@ dev:
   recipes:
     command: npm start
     sync:
-      - /source/app
+      - .:/source/app
