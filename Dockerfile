@@ -9,7 +9,7 @@ RUN npm install
 
 COPY bin/ ./bin
 COPY source source
-COPY view views
+COPY views views
 COPY public public
 COPY app.js .
 
