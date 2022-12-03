@@ -1,0 +1,13 @@
+build:
+  recipes:
+    context: ../
+
+deploy:
+  - help upgrade --install recipes chart
+    --set recipes.image=${OKTETO_BUILD_RECIPES_IMAGE}
+
+dev:
+  recipes:
+    command: npm start
+    sync:
+      - ../source/app.js
