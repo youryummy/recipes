@@ -9,6 +9,7 @@ RUN npm install
 
 COPY bin/ ./bin
 COPY source source
+COPY app.js .
 
 EXPOSE 3000
 
