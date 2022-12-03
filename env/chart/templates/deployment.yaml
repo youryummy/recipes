@@ -6,7 +6,7 @@ metadata:
     {{- include "recipes.labels" . | nindent 4}}
   app.kubernetes.io/component: recipes
   spec:
-    replicas: {{ .Values.contacts.replicaCount }}
+    replicas: {{ .Values.recipes.replicaCount }}
     selector:
       matchLabels:
         app.kubernetes.io/name: recipes
