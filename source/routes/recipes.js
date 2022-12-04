@@ -17,12 +17,12 @@ router.get('/', async function(req, res, next) {
 });
 /*POST Recipes*/
 router.post('/', async function(req, res,next){
-  const {name, summary, verified, duration, steps, tags} = req.body;
+
+  const {name, summary, duration, steps, tags} = req.body;
 
   const recipe = new Recipe({
     name,
     summary,
-    verified,
     duration,
     steps,
     tags
@@ -44,44 +44,72 @@ router.post('/', async function(req, res,next){
 });
 
 /*Delete Recipes*/
-router.delete('/:id', function(req, res,next){
-  var id = req.params.id-1;
-  if (id > -1) {
-    recipes.splice(id,1);
-    res.sendStatus(204);
-  }else{
-    res.sendStatus(404);
+router.delete('/:id', async function(req, res,next){
+  try{
+    const recipeToDelete = await Recipe.findById(req.params.id);
+    if(recipeToDelete==null)
+      res.sendStatus(404);
+    else
+      try {
+        const result = await Recipe.deleteOne(recipeToDelete);
+        if(result)
+          res.sendStatus(204);
+        else
+          res.sendStatus(404);
+      }catch(e){
+        debug("DB Problem", e);
+        res.sendStatus(500);
+      }
+  }catch (e) {
+    debug("DB problem",e);
+    res.sendStatus((500));
   }
+
+})
+/*Bulk delete*/
+router.delete('/', async function(req, res,next){
+  Recipe.deleteMany({id: req.query.id})
+      .then(() => res.sendStatus(204))
+      .catch(() => res.status(500).json({error: "DB Problem"}));
 })
 
 
 /*GET recipe/id */
-router.get('/:id', function (req, res, next) {
-  var id = req.params.id;
-  var result = recipes.find(r => {
-    return r.id == id;
-  });
-  if(result) {
-    res.send({"result":result});
-  }else{
-    res.sendStatus(404);
+router.get('/:id', async function (req, res, next) {
+  try {
+    var id = req.params.id;
+    const result = await Recipe.findById(id);
+    res.send(result);
+  }catch(e){
+    debug("DB problem",e);
+    res.sendStatus((500));
   }
 
 })
 
 /*PUT /recipes/:id*/
-router.put("/:id", function (req,res,next){
-  var id = req.params.id;
-  var recipe = recipes.find(r => {
-    return r.id == id;
-  })
-    recipe.name = req.body.name;
-    recipe.summary = req.body.summary;
-    recipe.duration = req.body.duration;
-    recipe.steps = req.body.steps;
-    recipe.tags = req.body.tags;
+router.put("/:id", async function (req,res,next){
+  try {
+    var id = req.params.id;
+    const {name, summary, duration, steps, tags} = req.body;
+    const recipe = await Recipe.findById(id);
+    if(recipe==null)
+      res.sendStatus(404)
+    else
+      recipe.name = name;
+      recipe.summary = summary;
+      recipe.duration = duration;
+      recipe.steps = steps;
+      recipe.tags = tags;
 
-    res.sendStatus(200);
+      await recipe.save();
+      res.sendStatus(200);
+
+  }catch (e) {
+    debug("DB problem",e);
+    res.sendStatus((500));
+  }
+
 
 })
 
