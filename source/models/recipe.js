@@ -4,32 +4,37 @@ const Schema = mongoose.Schema;
 const recipeSchema = new Schema({
     name: {
         type: String,
-        required: true
+        required: [true, "Name is required"],
+        minLength: 1,
+        maxLength: 100,
     },
     summary: {
         type:String,
-        required: true
-    },
-    verified: {
-        type: Boolean,
-        required: true
+        required: false,
+        minLength: 1,
+        maxLength: 1000
     },
     duration: {
         type: Number,
-        required: true
+        required: [true, "Duration is required"],
+        min: 0,
+        validate:{
+            validator: Number.isInteger
+        }
     },
     steps: {
         type: ["String"],
-        required: true
+        required: [true, "Steps are required"]
     },
     tags: {
         type: ["String"],
-        required:  true
+        required:  [true, "Tags are required"]
     }
 })
 
 recipeSchema.methods.cleanup = function(){
     return {
+        _id: this._id,
         name: this.name,
         summary: this.summary,
         duration: this.duration,
