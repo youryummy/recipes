@@ -37,19 +37,4 @@ spec:
             httpGet:
               path: /
               port: 5000
-services:
-  recipes:
-    build: .
-    ports:
-      - 8080:8080
-    enviroment:
-      - DB_HOST=mongodb://mongodb:27017
-      - secret=dev
-    mongodb:
-      image: bitnami/mongodb:latest
-      ports:
-        - 27017
-      volumes:
-        - data:/bitnami/mongodb
-volumes:
-  data:
+
