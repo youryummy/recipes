@@ -1,4 +1,5 @@
 const axios = require("axios");
+var Recipe = require("../models/recipe")
 
 const options = {
     method: 'GET',
@@ -11,34 +12,38 @@ const options = {
 };
 
 const getTastyRecipes = async function() {
-    axios.request(options).then(function (response) {
+    axios.request(options).then(async function (response) {
 
         for (var i in response.data.results) {
-            console.log('Receta '+i+':')
-            console.log('Nombre: '+response.data.results[i].name);
-            console.log('Descripcion: '+((response.data.results[i].description == '' || response.data.results[i].description == null) ? ('No hay descripcion') :
-                (response.data.results[i].description.replace(/<[^>]*>/g,"").replace("\n",""))));
-            console.log('Duracion: '+((response.data.results[i].total_time_minutes == '' || response.data.results[i].total_time_minutes == null) ? (0) : (response.data.results[i].total_time_minutes)) +' min.');
-            console.log('Instrucciones:')
+            let name = response.data.results[i].name;
+            let summary = (response.data.results[i].description == '' || response.data.results[i].description == null) ? ('No hay descripcion') :
+                (response.data.results[i].description.replace(/<[^>]*>/g,"").replace("\n",""));
+            let duration = ((response.data.results[i].total_time_minutes == '' || response.data.results[i].total_time_minutes == null) ? (0) : (response.data.results[i].total_time_minutes));
+            let steps = [];
             if(response.data.results[i].instructions==null||response.data.results[i].instructions.length==0)
-                console.log('No hay instrucciones');
+                steps.push('No hay instrucciones');
             else
                 for (var j in response.data.results[i].instructions) {
-
-                    console.log('Paso '+(j)+': ')
-                    console.log(response.data.results[i].instructions[j].display_text);
-                    console.log('')
+                    steps.push(response.data.results[i].instructions[j].display_text);
                 }
 
-            console.log('Etiquetas: ')
+            let tags = [];
             if(response.data.results[i].topics==null||response.data.results[i].topics.length==0)
-                console.log('No hay etiquetas');
+                tags.push('No hay etiquetas');
             else
                 for (var k in response.data.results[i].topics) {
-                    console.log(response.data.results[i].topics[k].name);
-
+                    tags.push(response.data.results[i].topics[k].name);
                 }
-            console.log('-------------------------')
+            const recipe = new Recipe({
+                name,
+                summary,
+                duration,
+                steps,
+                tags
+            });
+
+            await recipe.save();
+
         }
 
 
@@ -46,7 +51,7 @@ const getTastyRecipes = async function() {
         console.error(error);
     })
 }
-console.log(getTastyRecipes());
+
 
 module.exports = {
     "getTastyRecipes": getTastyRecipes

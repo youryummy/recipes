@@ -1,18 +1,35 @@
 var express = require('express');
 var router = express.Router();
 var Recipe = require("../models/recipe")
+const {getTastyRecipes} = require("../services/tastyService");
 var debug = require('debug')('recipes-2:server')
+var tastyCall = true;
 
 /* GET recipes listing. */
 router.get('/', async function(req, res, next) {
   try {
     const result = await Recipe.find();
+    if(tastyCall) {
+      await getTastyRecipes();
+      tastyCall = false;
+    }
     res.send(result.map((c) => c.cleanup()));
-    //res.send(result);
   }catch(e){
     debug("DB problem",e);
     res.sendStatus((500));
   }
+
+/*GET recipe/id */
+router.get('/:id', async function (req, res, next) {
+  try {
+    var id = req.params.id;
+    const result = await Recipe.findById(id);
+    res.send(result.cleanup());
+  }catch(e){
+    debug("DB problem",e);
+    res.sendStatus((500));
+  }
+
 
 });
 /*POST Recipes*/
@@ -65,27 +82,20 @@ router.delete('/:id', async function(req, res,next){
     res.sendStatus((500));
   }
 
-})
+});
+
 /*Bulk delete*/
 router.delete('/', async function(req, res,next){
-  Recipe.deleteMany({id: req.query.id})
-      .then(() => res.sendStatus(204))
-      .catch(() => res.status(500).json({error: "DB Problem"}));
-})
-
-
-/*GET recipe/id */
-router.get('/:id', async function (req, res, next) {
   try {
-    var id = req.params.id;
-    const result = await Recipe.findById(id);
-    res.send(result);
+        if(await Recipe.deleteMany({id:req.query.id})){
+          tastyCall = true;
+          res.sendStatus(204);
+        }
   }catch(e){
-    debug("DB problem",e);
-    res.sendStatus((500));
+        res.status(500).json({error: "DB Problem"})
   }
-
 })
+});
 
 /*PUT /recipes/:id*/
 router.put("/:id", async function (req,res,next){
@@ -109,8 +119,6 @@ router.put("/:id", async function (req,res,next){
     debug("DB problem",e);
     res.sendStatus((500));
   }
-
-
-})
+});
 
 module.exports = router;
