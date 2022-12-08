@@ -2,7 +2,7 @@ name: Okteto Deployment
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ main ]
   
 jobs:
   deploy:
@@ -17,7 +17,7 @@ jobs:
         token: ${{ secrets.OKTETO_TOKEN }}
         
     - name: Okteto Deploy
-      uses: josaloroc/okteto-push@v1.0.2
+      uses: resinas/okteto-push@v1.0.2
       with:
         namespace: yyrecipes-josaloroc
         build: true
