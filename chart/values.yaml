@@ -1,2 +1,4 @@
 recipes:
   replicaCount: 1
+
+recipesMongoUrl: mongodb://mongo/test

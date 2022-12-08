@@ -5,6 +5,7 @@ build:
 deploy:
   - helm upgrade --install recipes chart
     --set recipes.image=${OKTETO_BUILD_RECIPES_IMAGE}
+    --set recipesMongoUrl=$RECIPES_DB_URL
 
 dev:
   recipes:
