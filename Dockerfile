@@ -14,6 +14,6 @@ COPY views views
 COPY public public
 COPY app.js .
 
-EXPOSE 5000
+EXPOSE 80
 
 CMD npm start
