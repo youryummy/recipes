@@ -1,6 +1,6 @@
-const app = require('../app');
+const app = require('../../app');
 const request = require('supertest');
-const Recipe = require('../source/models/recipe');
+const Recipe = require('../../source/models/recipe');
 
 describe('Recipes API', () => {
     describe('GET /', () => {
@@ -31,7 +31,6 @@ describe('Recipes API', () => {
 
     describe("POST /recipes", () => {
         const recipe = {name: "Receta ejemplo", summary: "Es una receta", duration: 20, steps: ["1º Paso ejemplar","2º Paso ejemplar"], tags:["Saludable", "Variado"]};
-        const recipeFail = {name: "Receta ejemplo", summary: "Es una receta", duration: "Fallo", steps: ["1º Paso ejemplar","2º Paso ejemplar"], tags:["Saludable", "Variado"]};
         var dbSave;
 
         beforeEach(() => {
@@ -49,7 +48,7 @@ describe('Recipes API', () => {
 
         it("Should return 500 if there is a problem with the connection", () =>{
             dbSave.mockImplementation(async () => Promise.reject("Connection failed"));
-            return request(app).post("/api/v1/recipes").send(recipeFail).then((response) => {
+            return request(app).post("/api/v1/recipes").send(recipe).then((response) => {
                 expect(response.statusCode).toBe(500);
                 expect(dbSave).toBeCalled();
             })
