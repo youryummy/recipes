@@ -1,0 +1,166 @@
+openapi: 3.0.3
+info:
+  title: YourYummy! Recipes
+  description: Recipes service your YourYummy! app
+  version: "0.1"
+servers:
+- url: /
+paths:
+  /api/v1/recipes:
+    get:
+      description: Get all recipes and extract Tasty! recipes if not called before
+      responses:
+        "200":
+          description: Got all recipes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/recipe'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    post:
+      description: Create a new recipe
+      requestBody:
+        description: Recipe to be created
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/recipe'
+            examples:
+              "0":
+                value: "\t{\r\n\t\t\"name\": \"Turron de chocolate\",\r\n\t\t\"summary\": \"Esta muy bueno\",\r\n\t\t\"duration\": 30,\r\n\t\t\"steps\": [\r\n\t\t\t\"1º Parte chocolate\",\r\n\t\t\t\"2º Añade almendras a la mezcla\",\r\n\t\t\t\"3º Hornear\"\r\n\t\t],\r\n\t\t\"tags\": [\r\n\t\t\t\"Chocolate\",\r\n\t\t\t\"Navidad\",\r\n\t\t\t\"Dulce\"\r\n\t\t]\r\n\t}"
+              "1":
+                value: "\t{\r\n\t\t\"name\": \"Sopita de estrellitas\",\r\n\t\t\"summary\": \"Calentita y con muchos nutrientes\",\r\n\t\t\"duration\": 20,\r\n\t\t\"steps\": [\r\n\t\t\t\"1º Compra el caldo\",\r\n\t\t\t\"2º Calientalo\",\r\n\t\t\t\"3º Añade estrellitas\"\r\n\t\t],\r\n\t\t\"tags\": [\r\n\t\t\t\"Saludable\",\r\n\t\t\t\"Nocturno\",\r\n\t\t\t\"Infantil\"\r\n\t\t]\r\n\t}"
+        required: true
+      responses:
+        "201":
+          description: Recipe created
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    delete:
+      description: Delete all recipes and reset Get Tasty! recipes
+      responses:
+        "204":
+          description: All recipes deleted
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /api/v1/recipes/{idRecipe}:
+    get:
+      description: Get a recipe
+      parameters:
+      - name: idRecipe
+        in: path
+        description: idRecipe
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Got a recipe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/recipe'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    put:
+      description: Edit an actual recipe
+      parameters:
+      - name: idRecipe
+        in: path
+        description: idRecipe
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/recipe'
+            examples:
+              "0":
+                value: "\t{\r\n\t\t\"_id\": \"63a6ce7f6f88a46c931fd141\",\r\n\t\t\"name\": \"Honey Dishes That Are Must-Haves\",\r\n\t\t\"summary\": \"Ain't nothin' sweeter than honey. Check out these addictive and fun recipes that use honey in the best way! There arguably isn't a better snack than the Honey Lime Sriracha Chicken Poppers. One-Pan Honey Garlic Chicken is an easy-to-make meal that will leave you satisfied! Make those wings better than ever with the tastiest Honey Garlic Chicken Wings!\",\r\n\t\t\"duration\": 0,\r\n\t\t\"steps\": [\r\n\t\t\t\"Instrucciones\"\r\n\t\t],\r\n\t\t\"tags\": [\r\n\t\t\t\"No hay etiquetas\"\r\n\t\t]\r\n\t}"
+      responses:
+        "204":
+          description: Recipe edited
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    delete:
+      description: Delete all recipes
+      parameters:
+      - name: idRecipe
+        in: path
+        description: idRecipe
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "204":
+          description: Recipe deleted
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+components:
+  schemas:
+    recipe:
+      required:
+      - idRecipe
+      type: object
+      properties:
+        summary:
+          type: string
+        duration:
+          type: integer
+        name:
+          type: string
+        _id:
+          type: string
+        steps:
+          type: array
+          items:
+            type: string
+        tags:
+          type: array
+          items:
+            type: string
+    error:
+      required:
+      - message
+      type: object
+      properties:
+        message:
+          type: string
+      additionalProperties: true
