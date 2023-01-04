@@ -27,24 +27,30 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/api/v1/recipes', recipesRouter);
 
-const swaggerOptions = {
-  swaggerDefinition: {
-    info: {
-      version:"1.0.0",
-      title: "YourYummy API with Swagger",
-      description:"This is a simple CRUD API application made with Express and documented with Swagger",
-      contact: {
-        name: "YourYummy",
-        url: "https://google.com",
-      },
-      servers:["http://localhost:8000"]
-    }
 
+const swaggerDefinition = {
+  openapi: '3.0.0',
+  info: {
+    title: 'Express API for YourYummy',
+    version: '1.0.0',
+    description:
+        'This is a REST API application made with Express. It retrieves data from YourYummy.',
   },
-  apis: ["./source/routes/recipes.js"],
+  servers: [
+    {
+      url: 'http://localhost',
+      description: 'Development server',
+    },
+  ],
 };
 
-const specs = swaggerJsdoc(swaggerOptions);
+const options = {
+  swaggerDefinition,
+  // Paths to files containing OpenAPI definitions
+  apis: ['./source/routes/recipes.js'],
+};
+
+const specs = swaggerJsdoc(options);
 app.use(
     "/docs/swagger.json",
     swaggerUi.serve,
