@@ -1,11 +1,22 @@
 var express = require('express');
 var router = express.Router();
+var app = express();
 var Recipe = require("../models/recipe")
 const {getTastyRecipes} = require("../services/tastyService");
 var debug = require('debug')('recipes-2:server')
 var tastyCall = true;
 
 /* GET recipes listing. */
+/**
+ * @swagger
+ * /api/v1/recipes:
+ *   get:
+ *       description: Get all recipes
+ *       responses:
+ *         '200':
+ *           description: Got all recipes
+ *         default:
+ *           description: Unexpected error */
 router.get('/', async function(req, res, next) {
   try {
     const result = await Recipe.find();
@@ -20,6 +31,25 @@ router.get('/', async function(req, res, next) {
   }
 
 /*GET recipe/id */
+/**
+ * @swagger
+ * /api/v1/recipes/{idRecipe}:
+ *   get:
+ *       description: Get a recipe
+ *       parameters:
+ *         - required: true
+ *           name: idRecipe
+ *           description: idRecipe
+ *           in: path
+ *           schema:
+ *             type: string
+ *       responses:
+ *         '200':
+ *           description: Got a recipe
+ *         default:
+ *           description: Unexpected error
+ */
+
 router.get('/:id', async function (req, res, next) {
   try {
     var id = req.params.id;
@@ -33,6 +63,13 @@ router.get('/:id', async function (req, res, next) {
 
 });
 /*POST Recipes*/
+/**
+ * @swagger
+ * /api/v1/recipes:
+ *   post:
+ *       summary: Simple get operation
+ *       description: Defines a simple get operation with no inputs and a complex
+ */
 router.post('/', async function(req, res,next){
 
   const {name, summary, duration, steps, tags} = req.body;
@@ -61,6 +98,24 @@ router.post('/', async function(req, res,next){
 });
 
 /*Delete Recipes*/
+/**
+ * @swagger
+ * /api/v1/recipes/{idRecipe}:
+ *  delete:
+ *       parameters:
+ *         - name: idRecipe
+ *           in: path
+ *           description: idRecipe
+ *           required: true
+ *           schema:
+ *             type: string
+ *       responses:
+ *         '204':
+ *           description: Recipe deleted
+ *         default:
+ *           description: Unexpected error
+ */
+
 router.delete('/:id', async function(req, res,next){
   try{
     const recipeToDelete = await Recipe.findById(req.params.id);
@@ -98,6 +153,25 @@ router.delete('/', async function(req, res,next){
 });
 
 /*PUT /recipes/:id*/
+/**
+ * @swagger
+ * /api/v1/recipes/{idRecipe}:
+ *  put:
+ *       description: Update a Recipe
+ *       parameters:
+ *         - required: true
+ *           name: idRecipe
+ *           description: idRecipe
+ *           in: path
+ *           schema:
+ *             type: string
+ *       responses:
+ *         '204':
+ *           description: Recipe edited
+ *         default:
+ *           description: Unexpected error
+ */
+
 router.put("/:id", async function (req,res,next){
   try {
     var id = req.params.id;
@@ -120,5 +194,6 @@ router.put("/:id", async function (req,res,next){
     res.sendStatus((500));
   }
 });
+
 
 module.exports = router;

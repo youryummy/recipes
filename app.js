@@ -7,7 +7,12 @@ var logger = require('morgan');
 var indexRouter = require('./source/routes');
 var recipesRouter = require('./source/routes/recipes');
 
+const
+    swaggerJsdoc = require("swagger-jsdoc"),
+    swaggerUi = require("swagger-ui-express");
+
 var app = express();
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -21,6 +26,30 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/api/v1/recipes', recipesRouter);
+
+const swaggerOptions = {
+  swaggerDefinition: {
+    info: {
+      version:"1.0.0",
+      title: "YourYummy API with Swagger",
+      description:"This is a simple CRUD API application made with Express and documented with Swagger",
+      contact: {
+        name: "YourYummy",
+        url: "https://google.com",
+      },
+      servers:["http://localhost:8000"]
+    }
+
+  },
+  apis: ["./source/routes/recipes.js"],
+};
+
+const specs = swaggerJsdoc(swaggerOptions);
+app.use(
+    "/docs/swagger.json",
+    swaggerUi.serve,
+    swaggerUi.setup(specs)
+);
 
 //setup connection to mongo
 const mongoose = require("mongoose");
