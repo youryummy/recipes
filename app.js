@@ -56,6 +56,7 @@ app.use(
     swaggerUi.serve,
     swaggerUi.setup(specs)
 );
+app.get('/docs/swagger.json', specs);
 
 //setup connection to mongo
 const mongoose = require("mongoose");
