@@ -57,6 +57,29 @@ var tastyCall = true;
  *         message:
  *           type: string
  *       additionalProperties: true
+ *   securitySchemes:
+ *     apikey:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ *       x-acl-config:
+ *         user:
+ *           api/v1/recipes/{id}:
+ *             "read:any": ["*"]
+ *             "update:own": ["*"]
+ *             "delete:own": ["*"]
+ *           api/v1/recipes:
+ *             "read:any": ["*"]
+ *             "create:own": ["*"]
+ *         admin:
+ *           api/v1/recipes:
+ *             "read:any": ["*"]
+ *             "create:any": ["*"]
+ *           api/v1/recipes/{id}:
+ *             "read:any": ["*"]
+ *             "update:any": ["*"]
+ *             "delete:any": ["*"]
+
  *         */
 router.get('/', async function(req, res, next) {
   try {

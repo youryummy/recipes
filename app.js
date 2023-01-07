@@ -36,12 +36,6 @@ const swaggerDefinition = {
     description:
         'This is a REST API application made with Express. It retrieves data from YourYummy.',
   },
-  servers: [
-    {
-      url: 'http://localhost',
-      description: 'Development server',
-    },
-  ],
 };
 
 const options = {
@@ -56,8 +50,7 @@ app.use(
     swaggerUi.serve,
     swaggerUi.setup(specs)
 );
-console.log(JSON.parse(JSON.stringify(specs)))
-app.get('/docs/swagger.json',  (req, res) => res.send(JSON.parse(JSON.stringify(specs))));
+app.get('/docs/swagger.json',  (req, res) => res.json((specs)));
 
 //setup connection to mongo
 const mongoose = require("mongoose");
