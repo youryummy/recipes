@@ -52,11 +52,12 @@ const options = {
 
 const specs = swaggerJsdoc(options);
 app.use(
-    "/docs/swagger.json",
+    "/docs/swagger",
     swaggerUi.serve,
     swaggerUi.setup(specs)
 );
-app.get('/docs/swagger.json', specs);
+console.log(JSON.parse(JSON.stringify(specs)))
+app.get('/docs/swagger.json',  (req, res) => res.send(JSON.parse(JSON.stringify(specs))));
 
 //setup connection to mongo
 const mongoose = require("mongoose");
