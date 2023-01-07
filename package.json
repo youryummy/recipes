@@ -6,6 +6,7 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
+    "@apidevtools/json-schema-ref-parser": "^9.1.0",
     "@apidevtools/swagger-parser": "^10.1.0",
     "axios": "^1.2.0",
     "cookie-parser": "~1.4.4",

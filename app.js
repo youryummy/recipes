@@ -10,7 +10,7 @@ var recipesRouter = require('./source/routes/recipes');
 const
     swaggerJsdoc = require("swagger-jsdoc"),
     swaggerUi = require("swagger-ui-express");
-
+const $RefParser = require("@apidevtools/json-schema-ref-parser");
 var app = express();
 
 
@@ -50,13 +50,38 @@ app.use(
     swaggerUi.serve,
     swaggerUi.setup(specs)
 );
-app.get('/docs/swagger.json',  (req, res) => res.json((specs)));
+async function deferen(res, schema) {
+  let schema_ = await $RefParser.dereference(JSON.parse(JSON.stringify(schema)));
+  console.log(schema_)
+  return res.send(schema_);
+}
+app.get('/docs/swagger.json',  (req, res) => deferen(res, specs));
+
+
 
 //setup connection to mongo
 const mongoose = require("mongoose");
-const DB_URL = (process.env.DB_URL || "mongodb://localhost/test");
-console.log("Connecting to database: %s", DB_URL);
-mongoose.connect(DB_URL);
+
+// Node environment
+const env = process.env.NODE_ENV ? process.env.NODE_ENV : 'production';
+
+// Mongo connection variables
+const mongoPort = process.env.MONGO_PORT ?? 27017;
+const mongoHost = process.env.MONGO_HOST ?? 'localhost';
+const mongoDBName = process.env.MONGO_DBNAME ?? 'default-db';
+const mongoProto = process.env.MONGO_PROTO ?? 'mongodb';
+const mongoUser = process.env.MONGO_USER;
+const mongoPwd = process.env.MONGO_PWD;
+
+const mongoURL = `${mongoProto}://` +
+    `${mongoUser ? mongoUser + ":" : ""}` +
+    `${mongoPwd ? mongoPwd + "@" : ""}` +
+    `${mongoHost}${mongoProto == "mongodb+srv" ? "" : ":" + mongoPort}` +
+    `/${mongoDBName}`;
+console.log("Connecting to database: %s", mongoURL);
+mongoose.connect(mongoURL);
+mongoose.set('strictQuery', false);
+
 const db = mongoose.connection;
 
 //recover from errors
