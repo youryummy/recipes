@@ -30,8 +30,6 @@ var tastyCall = true;
  *   schemas:
  *     recipe:
  *       type: object
- *       required:
- *         - idRecipe
  *       properties:
  *         summary:
  *           type: string
