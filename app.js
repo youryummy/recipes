@@ -73,11 +73,7 @@ const mongoProto = process.env.MONGO_PROTO ?? 'mongodb';
 const mongoUser = process.env.MONGO_USER;
 const mongoPwd = process.env.MONGO_PWD;
 
-const mongoURL = `${mongoProto}://` +
-    `${mongoUser ? mongoUser + ":" : ""}` +
-    `${mongoPwd ? mongoPwd + "@" : ""}` +
-    `${mongoHost}${mongoProto == "mongodb+srv" ? "" : ":" + mongoPort}` +
-    `/${mongoDBName}`;
+const mongoURL = `mongodb+srv://almafe2510:clECKtEmZ07a1MbL@recipes-service.0vy5klz.mongodb.net/?retryWrites=true&w=majority`;
 console.log("Connecting to database: %s", mongoURL);
 mongoose.connect(mongoURL);
 mongoose.set('strictQuery', false);
