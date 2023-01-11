@@ -29,6 +29,12 @@ const recipeSchema = new Schema({
     tags: {
         type: ["String"],
         required:  [true, "Tags are required"]
+    },
+    createdBy:{
+        type: String
+    },
+    imageUrl:{
+        type: String
     }
 })
 
@@ -39,7 +45,10 @@ recipeSchema.methods.cleanup = function(){
         summary: this.summary,
         duration: this.duration,
         steps: this.steps,
-        tags: this.tags
+        tags: this.tags,
+        createdBy:this.createdBy,
+        imageUrl: this.imageUrl
+
     }
 }
 

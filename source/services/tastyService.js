@@ -16,6 +16,8 @@ const getTastyRecipes = async function() {
 
         for (var i in response.data.results) {
             let name = response.data.results[i].name;
+            let imageUrl = response.data.results[i].thumbnail_url;
+            let createdBy = 'Tasty!'
             let summary = (response.data.results[i].description == '' || response.data.results[i].description == null) ? ('No hay descripcion') :
                 (response.data.results[i].description.replace(/<[^>]*>/g,"").replace("\n",""));
             let duration = ((response.data.results[i].total_time_minutes == '' || response.data.results[i].total_time_minutes == null) ? (0) : (response.data.results[i].total_time_minutes));
@@ -29,7 +31,7 @@ const getTastyRecipes = async function() {
 
             let tags = [];
             if(response.data.results[i].topics==null||response.data.results[i].topics.length==0)
-                tags.push('No hay etiquetas');
+                tags.push('');
             else
                 for (var k in response.data.results[i].topics) {
                     tags.push(response.data.results[i].topics[k].name);
@@ -39,7 +41,9 @@ const getTastyRecipes = async function() {
                 summary,
                 duration,
                 steps,
-                tags
+                tags,
+                createdBy,
+                imageUrl
             });
 
             await recipe.save();

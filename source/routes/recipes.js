@@ -47,6 +47,10 @@ var tastyCall = true;
  *           type: array
  *           items:
  *             type: string
+ *         createdBy:
+ *           type: string
+ *         imageUrl:
+ *           type: string
  *     error:
  *       type: object
  *       required:
@@ -271,11 +275,12 @@ router.get('/', async function(req, res, next) {
  *         content:
  *           application/json:
  *             schema:
- *               items:
  *                 $ref:  '#/components/schemas/recipe'
  *             examples:
  *               '0':
  *                 value: "\t{\r\n\t\t\"_id\": \"63a6ce7f6f88a46c931fd141\",\r\n\t\t\"name\": \"Honey Dishes That Are Must-Haves\",\r\n\t\t\"summary\": \"Ain't nothin' sweeter than honey. Check out these addictive and fun recipes that use honey in the best way! There arguably isn't a better snack than the Honey Lime Sriracha Chicken Poppers. One-Pan Honey Garlic Chicken is an easy-to-make meal that will leave you satisfied! Make those wings better than ever with the tastiest Honey Garlic Chicken Wings!\",\r\n\t\t\"duration\": 0,\r\n\t\t\"steps\": [\r\n\t\t\t\"Instrucciones\"\r\n\t\t],\r\n\t\t\"tags\": [\r\n\t\t\t\"No hay etiquetas\"\r\n\t\t]\r\n\t}"
+ *         description: Recipe to be edited
+ *         required: true
  *       responses:
  *         '204':
  *           description: Recipe edited
@@ -290,19 +295,20 @@ router.get('/', async function(req, res, next) {
 router.put("/:id", async function (req,res,next){
   try {
     var id = req.params.id;
-    const {name, summary, duration, steps, tags} = req.body;
+    const {name, summary, duration, steps, tags, createdBy, imageUrl} = req.body;
     const recipe = await Recipe.findById(id);
     if(recipe==null)
       res.sendStatus(404)
     else
       recipe.name = name;
-    recipe.summary = summary;
-    recipe.duration = duration;
-    recipe.steps = steps;
-    recipe.tags = tags;
+      recipe.summary = summary;
+      recipe.duration = duration;
+      recipe.steps = steps;
+      recipe.tags = tags;
+      recipe.imageUrl = imageUrl;
 
-    await recipe.save();
-    res.sendStatus(200);
+      await recipe.save();
+      res.sendStatus(204);
 
   }catch (e) {
     debug("DB problem",e);
