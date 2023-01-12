@@ -13,10 +13,13 @@
     "debug": "~2.6.9",
     "express": "~4.16.1",
     "http-errors": "~1.6.3",
+    "module": "^1.2.5",
     "mongodb": "^4.12.1",
     "mongoose": "^6.7.5",
     "morgan": "~1.9.1",
+    "opossum": "^7.0.1",
     "pug": "2.0.0-beta11",
+    "recachegoose": "^9.1.0",
     "swagger-jsdoc": "^6.2.7",
     "swagger-ui-express": "^4.6.0"
   }

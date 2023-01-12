@@ -5,7 +5,7 @@ var Recipe = require("../models/recipe")
 const {getTastyRecipes} = require("../services/tastyService");
 var debug = require('debug')('recipes-2:server')
 var tastyCall = true;
-
+const CircuitBreaker = require("../../circuitBreaker/circuitBreaker.js");
 /**
  * @swagger
  * /api/v1/recipes:
@@ -85,78 +85,80 @@ var tastyCall = true;
  *         */
 router.get('/', async function(req, res, next) {
   try {
-    const result = await Recipe.find();
-    if(tastyCall) {
+    const result = await Recipe.find().cache(10);
+    if (tastyCall) {
       await getTastyRecipes();
       tastyCall = false;
     }
     res.send(result.map((c) => c.cleanup()));
-  }catch(e){
-    debug("DB problem",e);
+  } catch (e) {
+    debug("DB problem", e);
     res.sendStatus((500));
   }
 
+
   /*GET recipe/id */
-/**
- * @swagger
- * /api/v1/recipes/{idRecipe}:
- *   get:
- *       description: Get a recipe
- *       parameters:
- *         - required: true
- *           name: idRecipe
- *           description: idRecipe
- *           in: path
- *           schema:
- *             type: string
- *       responses:
- *         '200':
- *           description: Got a recipe
- *         default:
- *           description: Unexpected error
- */
+  /**
+   * @swagger
+   * /api/v1/recipes/{idRecipe}:
+   *   get:
+   *       description: Get a recipe
+   *       parameters:
+   *         - required: true
+   *           name: idRecipe
+   *           description: idRecipe
+   *           in: path
+   *           schema:
+   *             type: string
+   *       responses:
+   *         '200':
+   *           description: Got a recipe
+   *         default:
+   *           description: Unexpected error
+   */
 
   router.get('/:id', async function (req, res, next) {
-    try {
-      var id = req.params.id;
-      const result = await Recipe.findById(id);
-      res.send(result.cleanup());
-    }catch(e){
-      debug("DB problem",e);
-      res.sendStatus((500));
-    }
+    const idRecipe = req.params.id;
 
-
+    CircuitBreaker.getBreaker(Recipe).fire("findById", idRecipe).then((result) => {
+      if (result) {
+        res.send(result);
+      } else {
+        res.status(404).send({message: `Recipe with id '${id}' does not exist`})
+      }
+    }).catch((err) => {
+      res.status(500).send({message: "Unexpected error ocurred, please try again later"});
+    });
   });
   /*POST Recipes*/
-/**
- * @swagger
- * /api/v1/recipes:
- *    post:
- *       description: Create a new recipe
- *       requestBody:
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/recipe'
- *             examples:
- *               '0':
- *                 value: "\t{\r\n\t\t\"name\": \"Turron de chocolate\",\r\n\t\t\"summary\": \"Esta muy bueno\",\r\n\t\t\"duration\": 30,\r\n\t\t\"steps\": [\r\n\t\t\t\"1º Parte chocolate\",\r\n\t\t\t\"2º Añade almendras a la mezcla\",\r\n\t\t\t\"3º Hornear\"\r\n\t\t],\r\n\t\t\"tags\": [\r\n\t\t\t\"Chocolate\",\r\n\t\t\t\"Navidad\",\r\n\t\t\t\"Dulce\"\r\n\t\t]\r\n\t}"
- *               '1':
- *                 value: "\t{\r\n\t\t\"name\": \"Sopita de estrellitas\",\r\n\t\t\"summary\": \"Calentita y con muchos nutrientes\",\r\n\t\t\"duration\": 20,\r\n\t\t\"steps\": [\r\n\t\t\t\"1º Compra el caldo\",\r\n\t\t\t\"2º Calientalo\",\r\n\t\t\t\"3º Añade estrellitas\"\r\n\t\t],\r\n\t\t\"tags\": [\r\n\t\t\t\"Saludable\",\r\n\t\t\t\"Nocturno\",\r\n\t\t\t\"Infantil\"\r\n\t\t]\r\n\t}"
- *         description: Recipe to be created
- *         required: true
- *       responses:
- *         '201':
- *           description: Recipe created
- *         default:
- *           description: Unexpected error
- *           content:
- *             application/json:
- *               schema:
- *                 $ref: '#/components/schemas/error'
- */
-  router.post('/', async function(req, res,next){
+  /**
+   * @swagger
+   * /api/v1/recipes:
+   *    post:
+   *       description: Create a new recipe
+   *       requestBody:
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/recipe'
+   *             examples:
+   *               '0':
+   *                 value: "\t{\r\n\t\t\"name\": \"Turron de chocolate\",\r\n\t\t\"summary\": \"Esta muy bueno\",\r\n\t\t\"duration\": 30,\r\n\t\t\"steps\": [\r\n\t\t\t\"1º Parte chocolate\",\r\n\t\t\t\"2º Añade almendras a la mezcla\",\r\n\t\t\t\"3º Hornear\"\r\n\t\t],\r\n\t\t\"tags\": [\r\n\t\t\t\"Chocolate\",\r\n\t\t\t\"Navidad\",\r\n\t\t\t\"Dulce\"\r\n\t\t]\r\n\t}"
+   *               '1':
+   *                 value: "\t{\r\n\t\t\"name\": \"Sopita de estrellitas\",\r\n\t\t\"summary\": \"Calentita y con muchos nutrientes\",\r\n\t\t\"duration\": 20,\r\n\t\t\"steps\": [\r\n\t\t\t\"1º Compra el caldo\",\r\n\t\t\t\"2º Calientalo\",\r\n\t\t\t\"3º Añade estrellitas\"\r\n\t\t],\r\n\t\t\"tags\": [\r\n\t\t\t\"Saludable\",\r\n\t\t\t\"Nocturno\",\r\n\t\t\t\"Infantil\"\r\n\t\t]\r\n\t}"
+   *         description: Recipe to be created
+   *         required: true
+   *       responses:
+   *         '201':
+   *           description: Recipe created
+   *         default:
+   *           description: Unexpected error
+   *           content:
+   *             application/json:
+   *               schema:
+   *                 $ref: '#/components/schemas/error'
+   */
+  router.post('/', async function (req, res, next) {
     const {name, summary, duration, steps, tags} = req.body;
 
     const recipe = new Recipe({
@@ -167,67 +169,55 @@ router.get('/', async function(req, res, next) {
       tags
     });
 
-    try{
-      await recipe.save();
-      return res.sendStatus(201);
-    }catch(e){
-      if(e.errors){
-        debug("Validation problem when saving",e);
-        res.status(400).send({error:e.message});
-      }else{
-        debug("DB Problem", e);
-        res.sendStatus(500);
+    CircuitBreaker.getBreaker(Recipe).fire("create", recipe).then((result) => {
+      if (result) {
+        return res.send(recipe);
+      } else {
+        res.sendStatus(404);
       }
-
-    }
+    })
+        .catch((err) => {
+          res.status(500).send({error: err.message});
+        });
   });
 
   /*Delete Recipes*/
-/**
- * @swagger
- * /api/v1/recipes/{idRecipe}:
- *    delete:
- *       description: Delete all recipes
- *       parameters:
- *         - required: true
- *           name: idRecipe
- *           description: idRecipe
- *           in: path
- *           schema:
- *             type: string
- *       responses:
- *         '204':
- *           description: Recipe deleted
- *         default:
- *           description: Unexpected error
- *           content:
- *             application/json:
- *               schema:
- *                 $ref: '#/components/schemas/error'
- */
+  /**
+   * @swagger
+   * /api/v1/recipes/{idRecipe}:
+   *    delete:
+   *       description: Delete all recipes
+   *       parameters:
+   *         - required: true
+   *           name: idRecipe
+   *           description: idRecipe
+   *           in: path
+   *           schema:
+   *             type: string
+   *       responses:
+   *         '204':
+   *           description: Recipe deleted
+   *         default:
+   *           description: Unexpected error
+   *           content:
+   *             application/json:
+   *               schema:
+   *                 $ref: '#/components/schemas/error'
+   */
 
-  router.delete('/:id', async function(req, res,next){
-    try{
-      const recipeToDelete = await Recipe.findById(req.params.id);
-      if(recipeToDelete==null)
-        res.sendStatus(404);
-      else
-        try {
-          const result = await Recipe.deleteOne(recipeToDelete);
-          if(result)
-            res.sendStatus(204);
-          else
-            res.sendStatus(404);
-        }catch(e){
-          debug("DB Problem", e);
-          res.sendStatus(500);
-        }
-    }catch (e) {
-      debug("DB problem",e);
-      res.sendStatus((500));
-    }
-
+  router.delete('/:id', async function (req, res, next) {
+    const idRecipe = req.params.id;
+    CircuitBreaker.getBreaker(Recipe).fire("findByIdAndDelete", idRecipe).then((result) => {
+      if (result) {
+        res.status(204).send({message: `Recipe with id '${idRecipe}' deleted successfully`});
+      } else {
+        res.status(404).send({message: `Recipe with id '${idRecipe}' does not exist`})
+      }
+    }).catch((err) => {
+      res.status(500).send({message: "Unexpected error ocurred, please try again later"});
+    });
   });
+
 
   /*Bulk delete*/
   /**
@@ -246,16 +236,18 @@ router.get('/', async function(req, res, next) {
    *                 $ref: '#/components/schemas/error'
    */
 
-  router.delete('/', async function(req, res,next){
-    try {
-      if(await Recipe.deleteMany({id:req.query.id})){
+  router.delete('/', async function (req, res, next) {
+    CircuitBreaker.getBreaker(Recipe).fire("deleteMany", {id:req.query.id}).then((result) => {
+      if (result) {
         tastyCall = true;
-        res.sendStatus(204);
+        res.status(204).send({message: `Recipes deleted successfully`});
+      } else {
+        res.status(404).send({message: "No recipes to delete"})
       }
-    }catch(e){
-      res.status(500).json({error: "DB Problem"})
-    }
-  })
+    }).catch((e) => {
+      res.status(500).send({message: "Unexpected error ocurred, please try again later"});
+    });
+  });
 });
 
 /*PUT /recipes/:id*/
@@ -293,28 +285,21 @@ router.get('/', async function(req, res, next) {
  */
 
 router.put("/:id", async function (req,res,next){
-  try {
-    var id = req.params.id;
-    const {name, summary, duration, steps, tags, createdBy, imageUrl} = req.body;
-    const recipe = await Recipe.findById(id);
-    if(recipe==null)
-      res.sendStatus(404)
-    else
-      recipe.name = name;
-      recipe.summary = summary;
-      recipe.duration = duration;
-      recipe.steps = steps;
-      recipe.tags = tags;
-      recipe.imageUrl = imageUrl;
+  const idRecipe = req.params.id;
+  const body = req.body;
 
-      await recipe.save();
-      res.sendStatus(204);
-
-  }catch (e) {
-    debug("DB problem",e);
-    res.sendStatus((500));
-  }
+  CircuitBreaker.getBreaker(Recipe)
+      .fire("findByIdAndUpdate", { _id: idRecipe }, body)
+      .then((result) => {
+        if (result) {
+          res.sendStatus(204).send({message: `Recipe updated successfully`});
+        } else {
+          res.sendStatus(404).send({message: `Recipe not found successfully`});
+        }
+      })
+      .catch((err) => {
+        res.status(500).send({message: "Unexpected error ocurred, please try again later"});
+      });
 });
-
 
 module.exports = router;

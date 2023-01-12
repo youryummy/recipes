@@ -12,6 +12,7 @@ const
     swaggerUi = require("swagger-ui-express");
 const $RefParser = require("@apidevtools/json-schema-ref-parser");
 var app = express();
+var cachegoose = require('recachegoose');
 
 
 // view engine setup
@@ -81,6 +82,10 @@ const mongoURL = `${mongoProto}://` +
 console.log("Connecting to database: %s", mongoURL);
 mongoose.connect(mongoURL);
 mongoose.set('strictQuery', false);
+
+cachegoose(mongoose, {
+  engine: 'memory'
+});
 
 const db = mongoose.connection;
 
