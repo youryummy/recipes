@@ -159,14 +159,16 @@ router.get('/', async function(req, res, next) {
    *                 $ref: '#/components/schemas/error'
    */
   router.post('/', async function (req, res, next) {
-    const {name, summary, duration, steps, tags} = req.body;
+    const {name, summary, duration, steps, tags, createdBy, imageUrl} = req.body;
 
     const recipe = new Recipe({
       name,
       summary,
       duration,
       steps,
-      tags
+      tags,
+      createdBy,
+      imageUrl
     });
 
     CircuitBreaker.getBreaker(Recipe).fire("create", recipe).then((result) => {
@@ -285,21 +287,26 @@ router.get('/', async function(req, res, next) {
  */
 
 router.put("/:id", async function (req,res,next){
-  const idRecipe = req.params.id;
-  const body = req.body;
+  try {
+    const idRecipe = req.params.id;
+    const body = req.body;
 
-  CircuitBreaker.getBreaker(Recipe)
-      .fire("findByIdAndUpdate", { _id: idRecipe }, body)
-      .then((result) => {
-        if (result) {
-          res.sendStatus(204).send({message: `Recipe updated successfully`});
-        } else {
-          res.sendStatus(404).send({message: `Recipe not found successfully`});
-        }
-      })
-      .catch((err) => {
-        res.status(500).send({message: "Unexpected error ocurred, please try again later"});
-      });
+    CircuitBreaker.getBreaker(Recipe)
+        .fire("findByIdAndUpdate", { _id: idRecipe }, body)
+        .then((result) => {
+          if (result) {
+            res.sendStatus(204)
+          } else {
+            res.sendStatus(404)
+          }
+        })
+        .catch((err) => {
+          res.status(500)
+        });
+  }catch (e) {
+    debug("DB problem",e);
+    res.sendStatus((500));
+  }
 });
 
 module.exports = router;
