@@ -276,7 +276,7 @@ router.get('/', async function(req, res, next) {
  *         description: Recipe to be edited
  *         required: true
  *       responses:
- *         '204':
+ *         '201':
  *           description: Recipe edited
  *         default:
  *           description: Unexpected error
