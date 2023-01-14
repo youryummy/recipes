@@ -13,6 +13,7 @@ COPY source source
 COPY views views
 COPY public public
 COPY app.js .
+COPY circuitBreaker circuitBreaker
 
 EXPOSE 80
 

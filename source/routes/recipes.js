@@ -287,26 +287,19 @@ router.get('/', async function(req, res, next) {
  */
 
 router.put("/:id", async function (req,res,next){
-  try {
-    const idRecipe = req.params.id;
-    const body = req.body;
+  const _id = req.params.id;
+  const body =req.body;
 
-    CircuitBreaker.getBreaker(Recipe)
-        .fire("findByIdAndUpdate", { _id: idRecipe }, body)
-        .then((result) => {
-          if (result) {
-            res.sendStatus(204)
-          } else {
-            res.sendStatus(404)
-          }
-        })
-        .catch((err) => {
-          res.status(500)
-        });
-  }catch (e) {
-    debug("DB problem",e);
-    res.sendStatus((500));
-  }
+  CircuitBreaker.getBreaker(Recipe).fire("findByIdAndUpdate", _id, body).then((result) => {
+    if (result) {
+      res.status(201).send({message: `Recipe with id '${_id}' updated successfully!`});
+    } else {
+      res.status(404).send({message: `Recipe with id '${_id}' does not exist`})
+    }
+  }).catch((err) => {
+    res.status(500).send({ message: "Unexpected error ocurred, please try again later" });
+  });
+
 });
 
 module.exports = router;

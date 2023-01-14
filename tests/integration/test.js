@@ -28,6 +28,7 @@ describe('Contacts DB connection', () => {
         expect(recipes).toBeArrayOfSize(2);
     });
 
+
     it('Get a recipes by Id in the DB', async () => {
         const recipe = new Recipe({name: "Receta ejemplo", summary: "Es una receta", duration: 20, steps: ["1º Paso ejemplar","2º Paso ejemplar"], tags:["Saludable", "Variado"],createdBy:"Joselu", imageUrl:""});
         await recipe.save();
@@ -39,6 +40,12 @@ describe('Contacts DB connection', () => {
         console.log(recipeId)
 
         expect(1).toBe(1);
+    });
+
+    it('Should not get a recipe by a fakeId', async () => {
+
+        recipeId = await Recipe.findById('idFake');
+        expect(recipeId).throwError(error);
     });
 
     it('Writes a recipe in the DB', async () => {
@@ -71,11 +78,6 @@ describe('Contacts DB connection', () => {
         expect(recipeEdited[0].name).toBe(recipe_.name);
     });
 
-    it("Should not write the database", async () => {
-        const recipe = new Recipe({name: "Receta ejemplo", summary: "Es una receta", duration: -1, steps: ["1º Paso ejemplar","2º Paso ejemplar"], tags:["Saludable", "Variado"],createdBy:"Joselu", imageUrl:""});
-        recipe.save();
-
-    });
 
     it('Delete all recipes in the DB', async () => {
         const recipe = new Recipe({name: "Receta ejemplo", summary: "Es una receta", duration: 20, steps: ["1º Paso ejemplar","2º Paso ejemplar"], tags:["Saludable", "Variado"],createdBy:"Joselu", imageUrl:""});

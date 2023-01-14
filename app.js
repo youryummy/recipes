@@ -80,6 +80,7 @@ const mongoURL = `${mongoProto}://` +
     `${mongoHost}${mongoProto == "mongodb+srv" ? "" : ":" + mongoPort}` +
     `/${mongoDBName}`;
 console.log("Connecting to database: %s", mongoURL);
+mongoose.set('runValidators', true);
 mongoose.connect(mongoURL);
 mongoose.set('strictQuery', false);
 
