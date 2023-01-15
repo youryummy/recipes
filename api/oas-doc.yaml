@@ -9,6 +9,17 @@ paths:
   /api/v1/recipes:
     get:
       description: Get all recipes and extract Tasty! recipes if not called before
+      parameters:
+        - name: username
+          description: username
+          in: query
+          schema:
+            type: string
+         - name: plan
+           description: plan
+           in: query
+           schema:
+             type: string
       responses:
         "200":
           description: Got all recipes
@@ -64,6 +75,7 @@ paths:
       parameters:
       - name: idRecipe
         in: path
+        x-acl-binding: recipeIds
         description: idRecipe
         required: true
         style: simple
@@ -88,6 +100,7 @@ paths:
       parameters:
       - name: idRecipe
         in: path
+        x-acl-binding: recipeIds
         description: idRecipe
         required: true
         style: simple
@@ -117,6 +130,7 @@ paths:
       description: Delete all recipes
       parameters:
       - name: idRecipe
+        x-acl-binding: recipeIds
         in: path
         description: idRecipe
         required: true
@@ -156,6 +170,14 @@ components:
           type: array
           items:
             type: string
+        imageUrl:
+          type: string
+        createdBy:
+          type: string
+        ingredientsId:
+          type: array
+          items:
+            type: string
     error:
       required:
       - message
@@ -164,3 +186,25 @@ components:
         message:
           type: string
       additionalProperties: true
+  securitySchemes:
+    apikey:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      x-acl-config:
+        user:
+          api/v1/recipes/{id}:
+            "read:any": ["*"]
+            "update:own": ["*"]
+            "delete:own": ["*"]
+          api/v1/recipes:
+            "read:any": ["*"]
+            "create:own": ["*"]
+        admin:
+          api/v1/recipes:
+            "read:any": ["*"]
+            "create:any": ["*"]
+          api/v1/recipes/{id}:
+            "read:any": ["*"]
+            "update:any": ["*"]
+            "delete:any": ["*"]

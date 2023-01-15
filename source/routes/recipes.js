@@ -63,6 +63,10 @@ const CircuitBreaker = require("../../circuitBreaker/circuitBreaker.js");
  *           type: string
  *         imageUrl:
  *           type: string
+ *         ingredientsId:
+ *           type: array
+ *           items:
+ *             type: string
  *     error:
  *       type: object
  *       required:
@@ -118,9 +122,7 @@ router.get('/', async function(req, res, next) {
               }).catch((err) => {
                   res.status(err.response?.status ?? 500).send({ message: err.response?.data?.message ?? "Unexpected error ocurred, please try again later" });
               });
-              setTimeout(() => {
                 res.send(list.map((c) => c.cleanup()));              
-              }, 1500)
     }
   } catch (e) {
     debug("DB problem", e);
@@ -138,6 +140,7 @@ router.get('/', async function(req, res, next) {
    *       description: Get a recipe
    *       parameters:
    *         - required: true
+   *           x-acl-binding: recipeIds
    *           name: idRecipe
    *           description: idRecipe
    *           in: path
@@ -192,7 +195,7 @@ router.get('/', async function(req, res, next) {
    *                 $ref: '#/components/schemas/error'
    */
   router.post('/', async function (req, res, next) {
-    const {name, summary, duration, steps, tags, createdBy, imageUrl} = req.body;
+    const {name, summary, duration, steps, tags, createdBy, imageUrl, ingredientsId} = req.body;
 
     const recipe = new Recipe({
       name,
@@ -201,7 +204,8 @@ router.get('/', async function(req, res, next) {
       steps,
       tags,
       createdBy,
-      imageUrl
+      imageUrl,
+      ingredientsId
     });
 
     CircuitBreaker.getBreaker(Recipe).fire("create", recipe).then((result) => {
@@ -224,6 +228,7 @@ router.get('/', async function(req, res, next) {
    *       description: Delete all recipes
    *       parameters:
    *         - required: true
+   *           x-acl-binding: recipeIds
    *           name: idRecipe
    *           description: idRecipe
    *           in: path
@@ -293,6 +298,7 @@ router.get('/', async function(req, res, next) {
  *       description: Edit an actual recipe
  *       parameters:
  *         - required: true
+ *           x-acl-binding: recipeIds
  *           name: idRecipe
  *           description: idRecipe
  *           in: path
