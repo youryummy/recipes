@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var app = express();
+const axios = require('axios');
 var Recipe = require("../models/recipe")
 const {getTastyRecipes} = require("../services/tastyService");
 var debug = require('debug')('recipes-2:server')
@@ -98,37 +99,29 @@ router.get('/', async function(req, res, next) {
   try {
     const username = req.query.username;
     const plan = req.query.plan;
-
     if (tastyCall) {
       await getTastyRecipes();
       tastyCall = false;
     }
+    let list = [];
     if(username==undefined||plan==undefined){
       var result = await Recipe.find().cache(10);
       res.send(result.map((c) => c.cleanup()));
     }else if(username!=undefined&&plan!=undefined){
       CircuitBreaker.getBreaker(axios, res, {onlyOpenOnInternalError: true})
               .fire("get", `http://recommendations/api/v1/recommendation/${username}/${plan}`)
-              .then((rbresponse) => {
-                console.log("Dentro 2")
-                let list = [];
-                for(r in rbresponse){
-                  CircuitBreaker.getBreaker(Recipe).fire("findById", rbresponse[r]).then((result) => {
-                    if (result) {
-                      list.push(result)
-                    } else {
-                      res.status(404).send({message: `Recipe with id '${id}' does not exist`})
-                    }
-                  }).catch((err) => {
-                    res.status(500).send({message: "Unexpected error ocurred, please try again later"});
-                  });
+              .then(async (rbresponse) => {
+                for(r in rbresponse.data){
+                  const result = await Recipe.findById(rbresponse.data[r]);
+                  list.push(result)
                 }
-                res.send(list.map((c) => c.cleanup()));              
               }).catch((err) => {
                   res.status(err.response?.status ?? 500).send({ message: err.response?.data?.message ?? "Unexpected error ocurred, please try again later" });
               });
+              setTimeout(() => {
+                res.send(list.map((c) => c.cleanup()));              
+              }, 1500)
     }
-
   } catch (e) {
     debug("DB problem", e);
     res.sendStatus((500));
