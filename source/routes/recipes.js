@@ -11,6 +11,17 @@ const CircuitBreaker = require("../../circuitBreaker/circuitBreaker.js");
  * /api/v1/recipes:
  *   get:
  *       description: Get all recipes and extract Tasty! recipes if not called before
+ *       parameters:
+ *         - name: username
+ *           description: username
+ *           in: query
+ *           schema:
+ *             type: string
+ *         - name: plan
+ *           description: plan
+ *           in: query
+ *           schema:
+ *             type: string
  *       responses:
  *         '200':
  *           description: Got all recipes
@@ -85,16 +96,45 @@ const CircuitBreaker = require("../../circuitBreaker/circuitBreaker.js");
  *         */
 router.get('/', async function(req, res, next) {
   try {
-    const result = await Recipe.find().cache(10);
+    const username = req.query.username;
+    const plan = req.query.plan;
+
     if (tastyCall) {
       await getTastyRecipes();
       tastyCall = false;
     }
-    res.send(result.map((c) => c.cleanup()));
+    if(username==undefined||plan==undefined){
+      var result = await Recipe.find().cache(10);
+      res.send(result.map((c) => c.cleanup()));
+    }else if(username!=undefined&&plan!=undefined){
+      CircuitBreaker.getBreaker(axios, res, {onlyOpenOnInternalError: true})
+              .fire("get", `http://recommendations/api/v1/recommendation/${username}/${plan}`)
+              .then((rbresponse) => {
+                console.log("Dentro 2")
+                let list = [];
+                for(r in rbresponse){
+                  CircuitBreaker.getBreaker(Recipe).fire("findById", rbresponse[r]).then((result) => {
+                    if (result) {
+                      list.push(result)
+                    } else {
+                      res.status(404).send({message: `Recipe with id '${id}' does not exist`})
+                    }
+                  }).catch((err) => {
+                    res.status(500).send({message: "Unexpected error ocurred, please try again later"});
+                  });
+                }
+                res.send(list.map((c) => c.cleanup()));              
+              }).catch((err) => {
+                  res.status(err.response?.status ?? 500).send({ message: err.response?.data?.message ?? "Unexpected error ocurred, please try again later" });
+              });
+    }
+
   } catch (e) {
     debug("DB problem", e);
     res.sendStatus((500));
   }
+
+  
 
 
   /*GET recipe/id */
