@@ -103,9 +103,12 @@ router.get('/', async function(req, res, next) {
   try {
     const username = req.query.username;
     const plan = req.query.plan;
-    if (tastyCall) {
+    var tasty = await Recipe.find({ createdBy: 'Tasty!' }); 
+    if (tasty.length>0) {
+
+    }else{
       await getTastyRecipes();
-      tastyCall = false;
+
     }
     let list = [];
     if(username==undefined||plan==undefined){
@@ -122,7 +125,9 @@ router.get('/', async function(req, res, next) {
               }).catch((err) => {
                   res.status(err.response?.status ?? 500).send({ message: err.response?.data?.message ?? "Unexpected error ocurred, please try again later" });
               });
+              setTimeout(() => {
                 res.send(list.map((c) => c.cleanup()));              
+              }, 3000)
     }
   } catch (e) {
     debug("DB problem", e);

@@ -36,6 +36,7 @@ const getTastyRecipes = async function() {
                 for (var k in response.data.results[i].topics) {
                     tags.push(response.data.results[i].topics[k].name);
                 }
+            let ingredientsId=[""]
             const recipe = new Recipe({
                 name,
                 summary,
@@ -43,9 +44,9 @@ const getTastyRecipes = async function() {
                 steps,
                 tags,
                 createdBy,
-                imageUrl
+                imageUrl,
+                ingredientsId
             });
-
             await recipe.save();
 
         }
