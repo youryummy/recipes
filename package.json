@@ -6,7 +6,7 @@
     "start": "node ./bin/www",
     "test:integration": "jest --watchAll --testPathPattern=tests/integration",
     "test:components": "mocha --exit --recursive --timeout 7000 -r tests/components",
-    "test": "npm run test:integration && npm run tests/setup.test.js test:components"
+    "test": "npm run test:components && npm run test:integration"
   },
   "dependencies": {
     "@apidevtools/json-schema-ref-parser": "^9.1.0",
