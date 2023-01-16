@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "test:integration": "jest --watchAll --testPathPattern=tests/integration/test.js",
-    "test:components": "mocha --exit --recursive --timeout 7000 -r tests/components/components.js",
-    "test": "npm run test:integration && npm run test:components"
+    "test:integration": "jest --watchAll --testPathPattern=tests/integration",
+    "test:components": "mocha --exit --recursive --timeout 7000 -r tests/components",
+    "test": "npm run test:integration && npm run tests/setup.test.js test:components"
   },
   "dependencies": {
     "@apidevtools/json-schema-ref-parser": "^9.1.0",
