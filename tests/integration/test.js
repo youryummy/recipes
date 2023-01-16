@@ -1,4 +1,4 @@
-const dbConnect = require('../../db');
+const dbConnect = require('../../db-test');
 const Recipe = require('../../source/models/recipe');
 const mongoose = require("mongoose")
 jest.setTimeout(30000);
