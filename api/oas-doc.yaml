@@ -75,7 +75,6 @@ paths:
       parameters:
       - name: idRecipe
         in: path
-        x-acl-binding: recipeIds
         description: idRecipe
         required: true
         style: simple
@@ -96,6 +95,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/error'
     put:
+      security:
+        - apikey: []
       description: Edit an actual recipe
       parameters:
       - name: idRecipe
@@ -127,6 +128,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/error'
     delete:
+      security:
+        - apikey: []
       description: Delete all recipes
       parameters:
       - name: idRecipe

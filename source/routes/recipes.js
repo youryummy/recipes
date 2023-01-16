@@ -145,7 +145,6 @@ router.get('/', async function(req, res, next) {
    *       description: Get a recipe
    *       parameters:
    *         - required: true
-   *           x-acl-binding: recipeIds
    *           name: idRecipe
    *           description: idRecipe
    *           in: path
@@ -160,12 +159,12 @@ router.get('/', async function(req, res, next) {
 
   router.get('/:id', async function (req, res, next) {
     const idRecipe = req.params.id;
-
-    CircuitBreaker.getBreaker(Recipe).fire("findById", idRecipe).then((result) => {
+    console.log(idRecipe)
+    CircuitBreaker.getBreaker(Recipe).fire("findById", { _id: idRecipe }).then((result) => {
       if (result) {
         res.send(result);
       } else {
-        res.status(404).send({message: `Recipe with id '${id}' does not exist`})
+        res.status(404).send({message: `Recipe with id '${idRecipe}' does not exist`})
       }
     }).catch((err) => {
       res.status(500).send({message: "Unexpected error ocurred, please try again later"});
@@ -192,6 +191,12 @@ router.get('/', async function(req, res, next) {
    *       responses:
    *         '201':
    *           description: Recipe created
+   *         '400':
+   *           description: Bad Request
+   *           content:
+   *             application/json:
+   *               schema:
+   *                 $ref: '#/components/schemas/error'
    *         default:
    *           description: Unexpected error
    *           content:
@@ -217,11 +222,13 @@ router.get('/', async function(req, res, next) {
       if (result) {
         return res.send(recipe);
       } else {
-        res.sendStatus(404);
+        console.log(result)
+        res.sendStatus(404).send({ message: 'Error creating a recipe' });
       }
     })
         .catch((err) => {
-          res.status(500).send({error: err.message});
+          console.log(err)
+          res.status(500).send({message: err.message});
         });
   });
 
@@ -230,6 +237,8 @@ router.get('/', async function(req, res, next) {
    * @swagger
    * /api/v1/recipes/{idRecipe}:
    *    delete:
+   *       security:
+   *         - apikey: []
    *       description: Delete all recipes
    *       parameters:
    *         - required: true
@@ -252,7 +261,7 @@ router.get('/', async function(req, res, next) {
 
   router.delete('/:id', async function (req, res, next) {
     const idRecipe = req.params.id;
-    CircuitBreaker.getBreaker(Recipe).fire("findByIdAndDelete", idRecipe).then((result) => {
+    CircuitBreaker.getBreaker(Recipe).fire("findByIdAndDelete", { _id: idRecipe }).then((result) => {
       if (result) {
         res.status(204).send({message: `Recipe with id '${idRecipe}' deleted successfully`});
       } else {
@@ -282,12 +291,12 @@ router.get('/', async function(req, res, next) {
    */
 
   router.delete('/', async function (req, res, next) {
-    CircuitBreaker.getBreaker(Recipe).fire("deleteMany", {id:req.query.id}).then((result) => {
+    CircuitBreaker.getBreaker(Recipe).fire("deleteMany").then((result) => {
       if (result) {
         tastyCall = true;
         res.status(204).send({message: `Recipes deleted successfully`});
       } else {
-        res.status(404).send({message: "No recipes to delete"})
+        res.status(404).send({message: "Something has happened"})
       }
     }).catch((e) => {
       res.status(500).send({message: "Unexpected error ocurred, please try again later"});
@@ -300,6 +309,8 @@ router.get('/', async function(req, res, next) {
  * @swagger
  * /api/v1/recipes/{idRecipe}:
  *    put:
+ *       security:
+ *         - apikey: []
  *       description: Edit an actual recipe
  *       parameters:
  *         - required: true
@@ -331,14 +342,14 @@ router.get('/', async function(req, res, next) {
  */
 
 router.put("/:id", async function (req,res,next){
-  const _id = req.params.id;
+  const idRecipe = req.params.id;
   const body =req.body;
 
-  CircuitBreaker.getBreaker(Recipe).fire("findByIdAndUpdate", _id, body).then((result) => {
+  CircuitBreaker.getBreaker(Recipe).fire("findByIdAndUpdate", { _id: idRecipe }, body).then((result) => {
     if (result) {
-      res.status(201).send({message: `Recipe with id '${_id}' updated successfully!`});
+      res.status(201).send({message: `Recipe with id '${idRecipe}' updated successfully!`});
     } else {
-      res.status(404).send({message: `Recipe with id '${_id}' does not exist`})
+      res.status(404).send({message: `Recipe with id '${idRecipe}' does not exist`})
     }
   }).catch((err) => {
     res.status(500).send({ message: "Unexpected error ocurred, please try again later" });
