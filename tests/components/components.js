@@ -1,6 +1,9 @@
 const chai = require('chai')
 const chaiHttp = require('chai-http');
-
+const mocha = require('mocha');
+const describe = mocha.describe;
+const it = mocha.it;
+const assert = require('chai').assert
 
 chai.use(chaiHttp);
 chai.expect();
