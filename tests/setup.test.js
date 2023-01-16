@@ -6,7 +6,7 @@ process.env.NODE_ENV = "test";
 
 // Populate test db and cleanup after integration tests
 
-    if (process.argv.includes("tests/integration")) {
+    if (process.argv.includes("tests/components")) {
 
         mongoose.set('strictQuery', false);
         mongoose.connect("mongodb://localhost:27017/test", {connectTimeoutMS: 3000, serverSelectionTimeoutMS: 3000 }).then(async () => {
