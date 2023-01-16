@@ -5,33 +5,35 @@ const dotenv = require("dotenv");
 process.env.NODE_ENV = "test";
 
 // Populate test db and cleanup after integration tests
-if (process.argv.includes("tests/integration")) {
-    
-    mongoose.set('strictQuery', false);
-    await mongoose.connect("mongodb://localhost:27017/test", {connectTimeoutMS: 3000, serverSelectionTimeoutMS: 3000 }).then(async () => {
-        await Recipe.insertMany([
-            { name: "test_POST 1", summary: "test_POST", duration: 1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST" },
-            { name: "test_POST 2", summary: "test_POST", duration: 1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST" },
-            { name: "test_POST 3" , summary: "test_POST", duration: 1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST" },
-            { name: "test_POST 4", summary: "test_POST", duration: 1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST" },
-            { name: "test_POST 5", summary: "test_POST", duration: 1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST" },
-            { name: "test_POST 6", summary: "test_POST", duration: 1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST" },
-            { name: "test_POST 7", summary: "test_POST", duration: 1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST" },
-            { name: "test_POST 8", summary: "test_POST", duration: 1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST" }
-        ]);
 
-        // Cleans db after tests
-        const oldExit = process.exit;
-        process.exit = async (code) => {
-            await mongoose.connection.db.dropCollection("account");                                                         
-            await mongoose.disconnect();
-            oldExit(code);
-        };
-    }).catch((err) => {
-        console.log("Failed to connect to test db: ", err.message);
-        process.exit(1);
-    });
-}
+    if (process.argv.includes("tests/integration")) {
+
+        mongoose.set('strictQuery', false);
+        mongoose.connect("mongodb://localhost:27017/test", {connectTimeoutMS: 3000, serverSelectionTimeoutMS: 3000 }).then(async () => {
+            await Recipe.insertMany([
+                { name: "test_POST 1", summary: "test_POST", duration: 1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST" },
+                { name: "test_POST 2", summary: "test_POST", duration: 1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST" },
+                { name: "test_POST 3" , summary: "test_POST", duration: 1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST" },
+                { name: "test_POST 4", summary: "test_POST", duration: 1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST" },
+                { name: "test_POST 5", summary: "test_POST", duration: 1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST" },
+                { name: "test_POST 6", summary: "test_POST", duration: 1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST" },
+                { name: "test_POST 7", summary: "test_POST", duration: 1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST" },
+                { name: "test_POST 8", summary: "test_POST", duration: 1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST" }
+            ]);
+
+            // Cleans db after tests
+            const oldExit = process.exit;
+            process.exit = async (code) => {
+                await mongoose.connection.db.dropCollection("recipes");
+                await mongoose.disconnect();
+                oldExit(code);
+            };
+        }).catch((err) => {
+            console.log("Failed to connect to test db: ", err.message);
+            process.exit(1);
+        });
+    }
+
 
 else if (process.argv.includes("tests/component")) {
     dotenv.config({ path: ".env.test" }); // load test env variables
@@ -45,10 +47,10 @@ else if (process.argv.includes("tests/component")) {
     const mongoURL = `${mongoProto}://${mongoUser}:${mongoPwd}@${mongoHost}/${mongoDBName}`;
 
     mongoose.set('strictQuery', false);
-    await mongoose.connect(mongoURL).then(async () => {
+    mongoose.connect(mongoURL).then(async () => {
         
         // populate test db
-        await Account.insertMany([
+        await Recipe.insertMany([
             { name: "test_POST 1", summary: "test_POST", duration: 1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST" },
             { name: "test_POST 2", summary: "test_POST", duration: 1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST" },
             { name: "test_POST 3" , summary: "test_POST", duration: 1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST" },
