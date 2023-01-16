@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node ./bin/www",
     "test:integration": "jest --watchAll --testPathPattern=tests/integration",
-    "test:components": "mocha --exit --recursive --timeout 7000 -r tests/components",
+    "test:components": "mocha --exit --recursive --timeout 7000 -r tests/components/components.js",
     "test": "npm run test:components && npm run test:integration"
   },
   "dependencies": {
