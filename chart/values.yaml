@@ -1,4 +1,17 @@
-recipes:
-  replicaCount: 1
+global:
+  node_env: production
 
-recipesMongoUrl: mongodb://mongo/test
+mongo_proto: mongodb
+mongo_host: localhost
+mongo_port: 27017
+mongo_user: null
+mongo_pwd: null
+mongo_dbname: default-db
+dev_node_port: 30100
+image: recipes-servicemongo_host: localhost
+mongo_port: 27017
+mongo_user: null
+mongo_pwd: null
+mongo_dbname: default-db
+dev_node_port: 30100
+image: recipesbook-service

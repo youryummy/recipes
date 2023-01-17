@@ -1,13 +1,16 @@
 openapi: 3.0.3
 info:
-  title: YourYummy! Recipes
-  description: Recipes service your YourYummy! app
-  version: "0.1"
-servers:
-- url: /
+  title: Recipes
+  description: Recipes service for YourYummy! app
+  version: "1.0"
+
 paths:
   /api/v1/recipes:
+    x-router-controller: recipesController
     get:
+      operationId: getRecipes
+      security:
+        - apikey: []
       description: Get all recipes and extract Tasty! recipes if not called before
       parameters:
         - name: username
@@ -15,11 +18,11 @@ paths:
           in: query
           schema:
             type: string
-         - name: plan
-           description: plan
-           in: query
-           schema:
-             type: string
+        - name: plan
+          description: plan
+          in: query
+          schema:
+            type: string
       responses:
         "200":
           description: Got all recipes
@@ -29,6 +32,12 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/recipe'
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
         default:
           description: Unexpected error
           content:
@@ -36,49 +45,45 @@ paths:
               schema:
                 $ref: '#/components/schemas/error'
     post:
+      operationId: createRecipe
+      security:
+        - apikey: []
       description: Create a new recipe
       requestBody:
         description: Recipe to be created
+        required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/recipe'
-            examples:
-              "0":
-                value: "\t{\r\n\t\t\"name\": \"Turron de chocolate\",\r\n\t\t\"summary\": \"Esta muy bueno\",\r\n\t\t\"duration\": 30,\r\n\t\t\"steps\": [\r\n\t\t\t\"1º Parte chocolate\",\r\n\t\t\t\"2º Añade almendras a la mezcla\",\r\n\t\t\t\"3º Hornear\"\r\n\t\t],\r\n\t\t\"tags\": [\r\n\t\t\t\"Chocolate\",\r\n\t\t\t\"Navidad\",\r\n\t\t\t\"Dulce\"\r\n\t\t]\r\n\t}"
-              "1":
-                value: "\t{\r\n\t\t\"name\": \"Sopita de estrellitas\",\r\n\t\t\"summary\": \"Calentita y con muchos nutrientes\",\r\n\t\t\"duration\": 20,\r\n\t\t\"steps\": [\r\n\t\t\t\"1º Compra el caldo\",\r\n\t\t\t\"2º Calientalo\",\r\n\t\t\t\"3º Añade estrellitas\"\r\n\t\t],\r\n\t\t\"tags\": [\r\n\t\t\t\"Saludable\",\r\n\t\t\t\"Nocturno\",\r\n\t\t\t\"Infantil\"\r\n\t\t]\r\n\t}"
-        required: true
       responses:
         "201":
           description: Recipe created
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
         default:
           description: Unexpected error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-    delete:
-      description: Delete all recipes and reset Get Tasty! recipes
-      responses:
-        "204":
-          description: All recipes deleted
-        default:
-          description: Unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-  /api/v1/recipes/{idRecipe}:
+  /api/v1/recipes/{id}:
+    x-router-controller: recipesController
     get:
+      operationId: findRecipe
+      security:
+        - apikey: []
       description: Get a recipe
       parameters:
-      - name: idRecipe
+      - name: id
         in: path
-        description: idRecipe
         required: true
-        style: simple
-        explode: false
+        x-acl-binding: recipeIds
+        description: Recipe id
         schema:
           type: string
       responses:
@@ -95,32 +100,32 @@ paths:
               schema:
                 $ref: '#/components/schemas/error'
     put:
+      operationId: editRecipe
       security:
         - apikey: []
       description: Edit an actual recipe
       parameters:
-      - name: idRecipe
+      - name: id
         in: path
         x-acl-binding: recipeIds
-        description: idRecipe
         required: true
-        style: simple
-        explode: false
+        description: Recipe id
         schema:
           type: string
       requestBody:
         content:
           application/json:
             schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/recipe'
-            examples:
-              "0":
-                value: "\t{\r\n\t\t\"_id\": \"63a6ce7f6f88a46c931fd141\",\r\n\t\t\"name\": \"Honey Dishes That Are Must-Haves\",\r\n\t\t\"summary\": \"Ain't nothin' sweeter than honey. Check out these addictive and fun recipes that use honey in the best way! There arguably isn't a better snack than the Honey Lime Sriracha Chicken Poppers. One-Pan Honey Garlic Chicken is an easy-to-make meal that will leave you satisfied! Make those wings better than ever with the tastiest Honey Garlic Chicken Wings!\",\r\n\t\t\"duration\": 0,\r\n\t\t\"steps\": [\r\n\t\t\t\"Instrucciones\"\r\n\t\t],\r\n\t\t\"tags\": [\r\n\t\t\t\"No hay etiquetas\"\r\n\t\t]\r\n\t}"
+              $ref: '#/components/schemas/recipe'
       responses:
         "204":
           description: Recipe edited
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
         default:
           description: Unexpected error
           content:
@@ -128,22 +133,27 @@ paths:
               schema:
                 $ref: '#/components/schemas/error'
     delete:
+      operationId: deleteRecipe
       security:
         - apikey: []
       description: Delete all recipes
       parameters:
-      - name: idRecipe
+      - name: id
         x-acl-binding: recipeIds
         in: path
         description: idRecipe
         required: true
-        style: simple
-        explode: false
         schema:
           type: string
       responses:
         "204":
           description: Recipe deleted
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
         default:
           description: Unexpected error
           content:
@@ -153,8 +163,6 @@ paths:
 components:
   schemas:
     recipe:
-      required:
-      - idRecipe
       type: object
       properties:
         summary:
@@ -162,8 +170,6 @@ components:
         duration:
           type: integer
         name:
-          type: string
-        _id:
           type: string
         steps:
           type: array
@@ -177,10 +183,11 @@ components:
           type: string
         createdBy:
           type: string
-        ingredientsId:
+        ingredients:
           type: array
           items:
-            type: string
+            type: object
+            additionalProperties: true
     error:
       required:
       - message
@@ -189,6 +196,7 @@ components:
         message:
           type: string
       additionalProperties: true
+  
   securitySchemes:
     apikey:
       type: http
@@ -196,13 +204,13 @@ components:
       bearerFormat: JWT
       x-acl-config:
         user:
+          api/v1/recipes:
+            "read:any": ["*"]
+            "create:any": ["*"]
           api/v1/recipes/{id}:
             "read:any": ["*"]
             "update:own": ["*"]
             "delete:own": ["*"]
-          api/v1/recipes:
-            "read:any": ["*"]
-            "create:own": ["*"]
         admin:
           api/v1/recipes:
             "read:any": ["*"]

@@ -1,4 +1,4 @@
-const OpossumCircuitBreaker = require('opossum');
+import OpossumCircuitBreaker from "opossum";
 
 const defaults = {
     timeout: 3000,
@@ -8,7 +8,7 @@ const defaults = {
 
 const breakers = {}
 
-class CircuitBreaker extends OpossumCircuitBreaker {
+export class CircuitBreaker extends OpossumCircuitBreaker {
     constructor (object) {
         super((fname, ...args) => object[fname](...args), defaults);
     }
@@ -23,5 +23,3 @@ class CircuitBreaker extends OpossumCircuitBreaker {
         return super.fire(fname, ...args);
     }
 }
-
-module.exports = CircuitBreaker

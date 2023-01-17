@@ -1,23 +1,53 @@
-name: Okteto Deployment
+name: Node.js CI
 
 on:
   push:
-    branches: [ develop ]
-  
+    branches: [ main, develop ]
+    paths-ignore:
+      - '**/*.md'
+  pull_request:
+    branches: [ main, develop ]
+    paths-ignore:
+      - '**/*.md'
+
 jobs:
-  deploy:
+  test:
+    name: Test
     runs-on: ubuntu-latest
-    
     steps:
-    - uses: actions/checkout@v2
-    
-    - name: Okteto login
-      uses: okteto/login@latest
-      with:
-        token: ${{ secrets.OKTETO_TOKEN }}
-        
-    - name: Okteto Deploy
-      uses: resinas/okteto-push@v1.0.2
-      with:
-        namespace: youryummy-maribelrb22
-        build: true
+      - uses: actions/checkout@v2
+      - name: Use Node.js 16.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16.x
+      - name: Install dependencies
+        run: npm ci
+      - name: Run docker compose
+        run: docker-compose -f "./.github/docker-compose.yaml" up -d --build
+      - name: Run tests
+        run: npm test
+        env:
+          CI: true
+
+  oktetoRelease:
+      name: Deploy to Okteto
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v2
+        - name: Okteto Login
+          uses: okteto/login@latest
+          with:
+            token: ${{ secrets.OKTETO_TOKEN }}
+        - name: Okteto Deploy
+          uses: okteto/pipeline@latest
+          with:
+            name: recipes
+            namespace: youryummy-maribelrb22
+            variables: >-
+              NODE_ENV=production,
+              NAMESPACE=youryummy-maribelrb22,
+              MONGO_PROTO=mongodb+srv,
+              MONGO_HOST=cluster0.2n6tvhy.mongodb.net,
+              MONGO_USER=YourYummy,
+              MONGO_PWD=KBGnT6WYuSEMFiJK,
+              MONGO_DBNAME=recipes,

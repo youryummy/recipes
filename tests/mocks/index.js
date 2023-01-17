@@ -1,5 +1,6 @@
-const CircuitBreaker = require("../../circuitBreaker/circuitBreaker.js");
-const {stub} = require("sinon");
+import { CircuitBreaker } from "../../circuitBreaker/circuitBreaker.js";
+import { stub } from 'sinon';
+import axios from 'axios';
 
 export default {
     circuitBreaker,
@@ -11,8 +12,4 @@ function circuitBreaker(throwException = false, reason) {
             fire: (fname, ...args) => throwException ? Promise.reject(reason) : Promise.resolve(result)
         })
     }
-}
-
-module.exports = {
-    "circuitBreaker": circuitBreaker
 }
