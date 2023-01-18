@@ -1,4 +1,5 @@
-import { Schema, model } from "mongoose";
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
 
 const recipeSchema = new Schema({
     name: {
@@ -35,10 +36,25 @@ const recipeSchema = new Schema({
     imageUrl:{
         type: String
     },
-    ingredients: {
+    ingredientsId: {
         type: ["String"],
-        required:  [true, "Ingredients are required"]
-    }
+        required:  [true, "Recipes are required"]
+    },
 })
 
-export default model("Recipe", recipeSchema, "recipe");
+recipeSchema.methods.cleanup = function(){
+    return {
+        _id: this._id,
+        name: this.name,
+        summary: this.summary,
+        duration: this.duration,
+        steps: this.steps,
+        tags: this.tags,
+        createdBy:this.createdBy,
+        imageUrl: this.imageUrl,
+        ingredientsId: this.ingredientsId
+    }
+}
+
+const Recipe = mongoose.model("Recipe", recipeSchema);
+module.exports = Recipe;

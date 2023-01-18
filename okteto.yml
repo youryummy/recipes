@@ -1,16 +1,14 @@
 build:
-  recipes-service:
+  recipes:
     context: .
 
 deploy:
-  - helm upgrade --install recipesbook-service chart
-    --set global.node_env=${NODE_ENV}
-    --set global.namespaceOverride=${NAMESPACE}
-    --set recipes-service.mongo_pwd=${MONGO_PWD}
-    --set recipes-service.mongo_user=${MONGO_USER}
-    --set recipes-service.mongo_host=${MONGO_HOST}
-    --set recipes-service.mongo_url=${MONGO_URL}
-    --set recipes-service.mongo_port=${MONGO_PORT}
-    --set recipes-service.mongo_proto=${MONGO_PROTO}
-    --set recipes-service.mongo_dbname=${MONGO_DBNAME}
-    --set recipes-service.image=${OKTETO_BUILD_RECIPESBOOK_SERVICE_IMAGE}
+  - helm upgrade --install recipes chart
+    --set recipes.image=${OKTETO_BUILD_RECIPES_IMAGE}
+    --set recipesMongoUrl=$RECIPES_DB_URL
+
+dev:
+  recipes:
+    command: npm start
+    sync:
+      - .:/app

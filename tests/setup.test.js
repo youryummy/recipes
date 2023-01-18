@@ -1,20 +1,17 @@
-import { logger } from "@oas-tools/commons";
-import mongoose from "mongoose";
-import server from '../server.js';
-import Recipe from "../mongo/Recipe.js";
-import axios from 'axios';
+const mongoose = require("mongoose");
+const Recipe = require("../source/routes/recipes.js")
+const dotenv = require("dotenv");
 
-logger.configure({ level: "off" });
 process.env.NODE_ENV = "test";
 
-if (process.argv.includes("tests/integration")) {
+// Populate test db and cleanup after integration tests
 
-    mongoose.set('strictQuery', false);
+    if (process.argv.includes("tests/components")) {
 
-     await mongoose.connect("mongodb://localhost:27017/database").then(async () => {
-     
-        await Recipe.insertMany([
-            { name: "test_POST 1", summary: "test_POST", duration: 1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST" },
+        mongoose.set('strictQuery', false);
+        mongoose.connect("mongodb://localhost:27017/test", {connectTimeoutMS: 3000, serverSelectionTimeoutMS: 3000 }).then(async () => {
+            await Recipe.insertMany([
+                { name: "test_POST 1", summary: "test_POST", duration: 1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST" },
                 { name: "test_POST 2", summary: "test_POST", duration: 1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST" },
                 { name: "test_POST 3" , summary: "test_POST", duration: 1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST" },
                 { name: "test_POST 4", summary: "test_POST", duration: 1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST" },
@@ -24,24 +21,33 @@ if (process.argv.includes("tests/integration")) {
                 { name: "test_POST 8", summary: "test_POST", duration: 1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST" }
             ]);
 
-        const oldExit = process.exit;
-        process.exit = async (code) => {
-            await mongoose.connection.db.dropCollection("recipes");                                                         
-            await mongoose.disconnect();
-            oldExit(code);
-        };
+            // Cleans db after tests
+            const oldExit = process.exit;
+            process.exit = async (code) => {
+                await mongoose.connection.db.dropCollection("recipes");
+                await mongoose.disconnect();
+                oldExit(code);
+            };
+        }).catch((err) => {
+            console.log("Failed to connect to test db: ", err.message);
+            process.exit(1);
+        });
+    }
 
-    }).catch((err) => {
-        console.log("Failed to connect to test db: ", err.message);
-        process.exit(1);
-    }); 
-}
 
-else if (process.argv.includes("tests/components")) {
-  
+else if (process.argv.includes("tests/component")) {
+    dotenv.config({ path: ".env.test" }); // load test env variables
+
+    const mongoHost = process.env.MONGO_HOST;
+    const mongoDBName = process.env.MONGO_DBNAME;
+    const mongoProto = process.env.MONGO_PROTO;
+    const mongoUser = process.env.MONGO_USER;
+    const mongoPwd = process.env.MONGO_PWD;
+    
+    const mongoURL = `${mongoProto}://${mongoUser}:${mongoPwd}@${mongoHost}/${mongoDBName}`;
+
     mongoose.set('strictQuery', false);
-    await mongoose.connect("mongodb://localhost:27017/database").then(async () => {
-
+    mongoose.connect(mongoURL).then(async () => {
         
         // populate test db
         await Recipe.insertMany([
@@ -55,7 +61,6 @@ else if (process.argv.includes("tests/components")) {
             { name: "test_POST 8", summary: "test_POST", duration: 1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST" }
         ]);
 
-
         // Cleans db after tests
         const oldExit = process.exit;
         process.exit = async (code) => {
@@ -64,9 +69,6 @@ else if (process.argv.includes("tests/components")) {
             oldExit(code);
         };
 
-        // Starts server
-        await server.deploy(process.env.NODE_ENV).catch(err => { console.log(err); });
-        
     }).catch((err) => {
         console.log("Failed to connect to test db: ", err.message);
         process.exit(1);

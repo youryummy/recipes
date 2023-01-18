@@ -1,57 +1,46 @@
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: recipes
   labels:
-    app: youryummy-{{ .Chart.Name }}
-  name: youryummy-{{ .Chart.Name }}
-  namespace: {{ if .Values.global.namespaceOverride }}{{.Values.global.namespaceOverride}}{{ else }}youryummy{{ end }}
+    {{- include "recipes.labels" . | nindent 4 }}
+    app.kubernetes.io/component: recipes
 spec:
-  replicas: 1
+  replicas: {{ .Values.recipes.replicaCount }}
   selector:
     matchLabels:
-      app: youryummy-{{ .Chart.Name }}
+      app.kubernetes.io/name: recipes
+      app.kubernetes.io/instance: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: youryummy-{{ .Chart.Name }}
+        app.kubernetes.io/name: recipes
+        app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
+      terminationGracePeriodSeconds: 0
       containers:
-        - env:
-          - name: PORT
-            value: "80"
-          - name: MONGO_HOST
-            value: {{ (index .Values .Chart.Name).mongo_host | default .Values.mongo_host }}
-          - name: MONGO_PORT
-            value: "{{ (index .Values .Chart.Name).mongo_port | default .Values.mongo_port }}"
-          - name: MONGO_DBNAME
-            value: {{ (index .Values .Chart.Name).mongo_dbname | default .Values.mongo_dbname }}
-          - name: MONGO_USER
-            value: {{ (index .Values .Chart.Name).mongo_user | default .Values.mongo_user }}
-          - name: MONGO_PROTO
-            value: {{ (index .Values .Chart.Name).mongo_proto | default .Values.mongo_proto }}
-          {{- if (index .Values .Chart.Name).mongo_pwd}}
-          - name: MONGO_PWD
-            valueFrom:
-              secretKeyRef:
-                  name: youryummy-{{ .Chart.Name }}-secrets
-                  key: MONGO_PWD
-          {{- end}}
-
-          image: {{ (index .Values .Chart.Name).image | default .Values.image }}
-          imagePullPolicy: IfNotPresent
-          name: youryummy-{{ .Chart.Name }}
+        - name: recipes
+          image: {{ .Values.recipes.image }}
+          env:
+            - name: DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb
+                  key: recipes_db_url
           ports:
-            - containerPort: 80
+            - name: http
+              containerPort: 80
               protocol: TCP
-          resources:
-            requests:
-              memory: 300Mi
-            limits:
-              memory: 400Mi
-      securityContext: {}          resources:
-            requests:
-              memory: 300Mi
-            limits:
-              memory: 400Mi
-      securityContext: {}
+          readinessProbe:
+            initialDelaySeconds: 10
+            periodSeconds: 1
+            httpGet:
+              path: /
+              port: 80
+          livenessProbe:
+            initialDelaySeconds: 10
+            periodSeconds: 1
+            httpGet:
+              path: /
+              port: 80
+

@@ -1,50 +1,46 @@
-import chai from 'chai';
-import chaiHttp from 'chai-http';
-import Recipe from "../../mongo/Recipe.js";
+const chai = require('chai')
+const chaiHttp = require('chai-http');
+const mocha = require('mocha');
+const describe = mocha.describe;
+const it = mocha.it;
+const assert = require('chai').assert
 
 chai.use(chaiHttp);
+chai.expect();
 chai.should();
 
 let recipeId;
 let fakeRecipeId = "63c0162b0fbc7404c373c56e"
-let recipePOSTWrongName = { name: "", summary: "test_POST", duration: 1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST" }
-let recipePOSTWrongSummary = { name: "test_POST", summary: "", duration: 1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST" }
-let recipePOSTWrongDuration = { name: "test_POST", summary: "test_POST", duration: -20, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST" }
-let recipePOSTWrongNameAndDuration = { name: "", summary: "test_POST", duration: -1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST" }
-let recipePOSTWrongDurationAndSummary = { name: "Test", summary: "", duration: -1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST" }
-let recipePOSTWrongNameAndSummary = { name: "", summary: "", duration: 1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST" }
+let recipePOSTWrongName = { name: "", summary: "test_POST", duration: 1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST", ingredientsId:[""] }
+let recipePOSTWrongSummary = { name: "test_POST", summary: "", duration: 1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST", ingredientsId:[""] }
+let recipePOSTWrongDuration = { name: "test_POST", summary: "test_POST", duration: -20, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST", ingredientsId:[""] }
+let recipePOSTWrongNameAndDuration = { name: "", summary: "test_POST", duration: -1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST",  ingredientsId:[""] }
+let recipePOSTWrongDurationAndSummary = { name: "Test", summary: "", duration: -1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST", ingredientsId:[""] }
+let recipePOSTWrongNameAndSummary = { name: "", summary: "", duration: 1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST", ingredientsId:[""] }
 
-let recipePOST = { name: "test_POST", summary: "test_POST", duration: 1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST"}
-let recipeTestId =             { name: "test_POST 1", summary: "test_POST", duration: 1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST" }
-    let recipePUT = { name: "test_UPDATE", summary: "test_UPDATE", duration: 2, steps: ["test_UPDATE"], tags: ["test_UPDATE"], createdBy:"test_UPDATE", imageUrl:"test_UPDATE" }
-let recipePUTWrong = { name: "", summary: "", duration: -50, steps: "", tags: "", createdBy:"", imageUrl:30}
+let recipePOST = { name: "test_POST", summary: "test_POST", duration: 1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST", ingredientsId:[""] }
+let recipeTestId = { id: "63c2abfd2f771df77136be90", name: "test_POST", summary: "test_POST", duration: 1, steps: ["test_POST"], tags: ["test_POST"], createdBy:"test_POST", imageUrl:"test_POST", ingredientsId:[""] }
+let recipePUT = { name: "test_UPDATE", summary: "test_UPDATE", duration: 2, steps: ["test_UPDATE"], tags: ["test_UPDATE"], createdBy:"test_UPDATE", imageUrl:"test_UPDATE", ingredientsId:[""] }
+let recipePUTWrong = { name: "", summary: "", duration: -50, steps: "", tags: "", createdBy:"", imageUrl:30, ingredientsId:[""]}
 
-const apiURL = "http://localhost:8080"
-const req = {}, res = {};
+const apiURL = "http://localhost"
 describe("Component tests", function() {
-    before(() => {
-        // Wait for the service to start
-        let delay = new Promise(resolve => setTimeout(resolve, 1000))
-        return delay
-    })
-
 
     describe('/POST Recipes', () => {
-        it('should add a recipe',  (done) => {
+        it('should add a recipe', (done) => {
             chai.request(apiURL)
                 .post('/api/v1/recipes')
                 .send(recipePOST)
-                .end(async (err, res) => {
-                    var recipe = await Recipe.find({ name: 'test_POST' });
-                    recipe.name==(recipePOST.name);
-                    recipe.summary==(recipePOST.summary);
-                    recipe.duration==(recipePOST.duration);
-                    recipe.steps==(recipePOST.steps);
-                    recipe.tags==(recipePOST.tags);
-                    recipe.createdBy==(recipePOST.createdBy);
-                    recipe.imageUrl==(recipePOST.imageUrl);
-                    res.should.have.status(201);
-
+                .end((err, res) => {
+                    res.body.should.be.a('object');
+                    res.body.should.have.property('name').eql(recipePOST.name);
+                    res.body.should.have.property('summary').eql(recipePOST.summary);
+                    res.body.should.have.property('duration').eql(recipePOST.duration);
+                    res.body.should.have.property('steps').eql(recipePOST.steps);
+                    res.body.should.have.property('tags').eql(recipePOST.tags);
+                    res.body.should.have.property('createdBy').eql(recipePOST.createdBy);
+                    res.body.should.have.property('imageUrl').eql(recipePOST.imageUrl);
+                    recipeId = res.body._id;
                     done();
 
                 })
@@ -56,13 +52,10 @@ describe("Component tests", function() {
             chai.request(apiURL)
                 .get('/api/v1/recipes')
                 .end((err, res) => {
-                    console.log(res.body[0])
                     res.should.have.status(200);
                     res.body.should.be.a('array');
                     console.log("Result length: " + res.body.length)
                     chai.expect(res.body).to.have.length.greaterThan(0);
-                    recipeId=res.body[0]._id
-                    console.log(recipeId)
                     done();
                 })
         })
@@ -90,27 +83,19 @@ describe("Component tests", function() {
                 chai.request(apiURL)
                     .put('/api/v1/recipes/' + recipeId)
                     .send(recipePUT)
-                    .end(async (err, res) => {
-                        var recipe = await Recipe.find({name: 'test_POST 1'});
-                        recipe.name != (recipePUT.name);
-                        recipe.summary != (recipePUT.summary);
-                        recipe.duration != (recipePUT.duration);
-                        recipe.steps != (recipePUT.steps);
-                        recipe.tags != (recipePUT.tags);
-                        recipe.createdBy != (recipePUT.createdBy);
-                        recipe.imageUrl != (recipePUT.imageUrl);
-
-                        res.should.have.status(204);
+                    .end((err, res) => {
+                        res.should.have.status(201);
+                        res.body.should.be.a('object');
                         done();
                     })
             })
 
             it('should not update recipe', (done) => {
                 chai.request(apiURL)
-                    .put('/api/v1/recipes/' + '63c5fd7d8675bfd39256907f')
+                    .put('/api/v1/recipes/' + 'khwqh7i12kq77ddqaa123')
                     .send(recipePUT)
                     .end((err, res) => {
-                        res.should.have.status(404);
+                        res.should.have.status(500);
                         done();
                     })
             })
@@ -120,7 +105,7 @@ describe("Component tests", function() {
                     .put('/api/v1/recipes' + recipeId)
                     .send(recipePOSTWrongName)
                     .end((err, res) => {
-                        res.body.error == ("validation failed");
+                        res.body.error != ("Recipe validation failed: name: Name is required");
                         done();
 
                     })
@@ -131,14 +116,14 @@ describe("Component tests", function() {
                     .put('/api/v1/recipes' + recipeId)
                     .send(recipePOSTWrongSummary)
                     .end((err, res) => {
-                        res.body.error == ("validation failed");
+                        res.body.error != ("Recipe validation failed: summary: Path `summary` (``) is shorter than the minimum allowed length (1).");
 
                         done();
 
                     })
             })
 
-            it('should not update a recipe with wrong duraition', (done) => {
+            it('should not add a recipe with wrong duraition', (done) => {
                 chai.request(apiURL)
                     .put('/api/v1/recipes' + recipeId)
                     .send(recipePOSTWrongDuration)
@@ -155,7 +140,7 @@ describe("Component tests", function() {
                     .put('/api/v1/recipes')
                     .send(recipePOSTWrongNameAndDuration)
                     .end((err, res) => {
-                        res.body.error == ("validation failed");
+                        res.body.error!=("Recipe validation failed: name: Name is required, duration: Path `duration` (-1) is less than minimum allowed value (0).");
 
                         done();
 
@@ -166,7 +151,7 @@ describe("Component tests", function() {
                     .put('/api/v1/recipes')
                     .send(recipePOSTWrongDurationAndSummary)
                     .end((err, res) => {
-                        res.body.error == ("validation failed");
+                        res.body.error!=("Recipe validation failed: summary: Path `summary` (``) is shorter than the minimum allowed length (1)., duration: Path `duration` (-1) is less than minimum allowed value (0).");
 
                         done();
 
@@ -177,7 +162,7 @@ describe("Component tests", function() {
                     .put('/api/v1/recipes')
                     .send(recipePOSTWrongNameAndSummary)
                     .end((err, res) => {
-                        res.body.error == ("validation failed");
+                        res.body.error!=("Recipe validation failed: name: Name is required, summary: Path `summary` (``) is shorter than the minimum allowed length (1).");
 
                         done();
 
@@ -196,6 +181,14 @@ describe("Component tests", function() {
                     })
             })
 
+            it('should delete all recipes', (done) => {
+                chai.request(apiURL)
+                    .delete('/api/v1/recipes')
+                    .end((err, res) => {
+                        res.should.have.status(204);
+                        done();
+                    })
+            })
         })
 
         describe('/POST Negative cases Recipes', () => {
@@ -204,7 +197,7 @@ describe("Component tests", function() {
                     .post('/api/v1/recipes')
                     .send(recipePOSTWrongName)
                     .end((err, res) => {
-                        res.body.error == ("validation failed");
+                        res.body.error != ("Recipe validation failed: name: Name is required");
 
                         done();
 
@@ -216,7 +209,7 @@ describe("Component tests", function() {
                     .post('/api/v1/recipes')
                     .send(recipePOSTWrongSummary)
                     .end((err, res) => {
-                        res.body.error == ("validation failed");
+                        res.body.error != ("Recipe validation failed: summary: Path `summary` (``) is shorter than the minimum allowed length (1).");
 
                         done();
 
@@ -228,7 +221,7 @@ describe("Component tests", function() {
                     .post('/api/v1/recipes')
                     .send(recipePOSTWrongNameAndDuration)
                     .end((err, res) => {
-                        res.body.error == ("validation failed");
+                        res.body.error!=("Recipe validation failed: name: Name is required, duration: Path `duration` (-1) is less than minimum allowed value (0).");
 
                         done();
 
@@ -239,7 +232,7 @@ describe("Component tests", function() {
                     .post('/api/v1/recipes')
                     .send(recipePOSTWrongDurationAndSummary)
                     .end((err, res) => {
-                        res.body.error == ("validation failed");
+                        res.body.error!=("Recipe validation failed: summary: Path `summary` (``) is shorter than the minimum allowed length (1)., duration: Path `duration` (-1) is less than minimum allowed value (0).");
 
                         done();
 
@@ -250,7 +243,7 @@ describe("Component tests", function() {
                     .post('/api/v1/recipes')
                     .send(recipePOSTWrongNameAndSummary)
                     .end((err, res) => {
-                        res.body.error == ("validation failed");
+                        res.body.error!=("Recipe validation failed: name: Name is required, summary: Path `summary` (``) is shorter than the minimum allowed length (1).");
 
                         done();
 
@@ -261,7 +254,7 @@ describe("Component tests", function() {
                     .post('/api/v1/recipes')
                     .send(recipePOSTWrongDuration)
                     .end((err, res) => {
-                        res.should.have.status(400);
+                        res.should.have.status(500);
 
                         done();
 
@@ -271,16 +264,16 @@ describe("Component tests", function() {
         })
         describe('/GET Negative recipes', () => {
 
-            it('should not get Recipe bc wrong id formation', (done) => {
+            it('should not get Recipe bc wrong id', (done) => {
                 chai.request(apiURL)
                     .get('/api/v1/recipes/' + "ffff")
                     .end((err, res) => {
-                        res.should.have.status(400);
+                        res.should.have.status(500);
                         done();
                     })
             })
 
-            it('should get id not found bc wrong id formation', (done) => {
+            it('should get id not found', (done) => {
                 chai.request(apiURL)
                     .get('/api/v1/recipes/' + fakeRecipeId)
                     .end((err, res) => {

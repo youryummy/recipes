@@ -1,16 +1,20 @@
-FROM node:16.13.0-alpine3.14
+FROM node:16.13.0-alpine
 
-WORKDIR /opt/app
+WORKDIR /app
 
-COPY . .
+COPY package.json .
+COPY package-lock.json .
 
-RUN npm install --only=prod
+RUN npm install
 
-ARG NODE_ENV=production
-ENV NODE_ENV $NODE_ENV
+WORKDIR /app
+COPY bin/ ./bin
+COPY source source
+COPY views views
+COPY public public
+COPY app.js .
+COPY circuitBreaker circuitBreaker
 
-ARG PORT=80
-ENV PORT $PORT
-EXPOSE $PORT
+EXPOSE 80
 
-CMD [ "node", "index.js" ]
+CMD npm start
