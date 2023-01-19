@@ -1,12 +1,15 @@
 const axios = require("axios");
 var Recipe = require("../models/recipe")
 
+// Node environment
+const env = process.env.NODE_ENV ? process.env.NODE_ENV : 'production';
+
 const options = {
     method: 'GET',
     url: 'https://tasty.p.rapidapi.com/recipes/list',
     params: {from: '0', size: '20'},
     headers: {
-        'x-rapidapi-key': '55b6edc232msh4c0b8ad01e13789p1a484djsn1b052ac5d787',
+        'x-rapidapi-key': process.env.RAPIDAPI_KEY,
         'x-rapidapi-host': 'tasty.p.rapidapi.com'
     }
 };
